@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>２りんかん | バイクPIT作業WEB予約受付</title>
+  <meta name="description" content="スマートフォンで完結！愛車バイクのオイル交換・オイルフィルター交換・タイヤ交換を簡単オンライン予約。空きスロット即時確認・翌日以降受付中。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Mobile-first App Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-logo" id="brandLogo">
+        <span class="logo-icon">🏍️</span>
+        <div class="logo-text">
+          <span class="logo-title">２りんかん</span>
+          <span class="logo-sub">バイクPIT作業WEB予約</span>
+        </div>
+      </div>
+      <nav class="nav-actions">
+        <button id="navUserViewBtn" class="nav-tab active">
+          お客様画面
+        </button>
+        <button id="navAdminViewBtn" class="nav-tab">
+          店舗管理画面 <span class="badge" id="adminBadgeCount">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-wrapper">
+    <!-- USER RESERVATION VIEW -->
+    <section id="userReservationView" class="view-panel active">
+      <!-- Mobile Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-badge">📅 翌日以降の予約受付中（当日不可）</div>
+        <h1 class="hero-title">バイクPIT作業を、<br><span class="gradient-text">待ち時間なし</span>でスムーズに。</h1>
+        <p class="hero-desc">オイル・エレメント・前後タイヤ交換をWEBで事前予約。愛車のスペックに合わせて専門スタッフがピット枠をご用意します。</p>
+      </div>
+
+      <div class="app-container">
+        <!-- 4-Step Progress Indicator -->
+        <div class="stepper-bar" id="stepperBar">
+          <div class="step-node active" data-step="1">
+            <div class="step-num">1</div>
+            <div class="step-label">車両選択</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-node" data-step="2">
+            <div class="step-num">2</div>
+            <div class="step-label">作業選択</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-node" data-step="3">
+            <div class="step-num">3</div>
+            <div class="step-label">日時選択</div>
+          </div>
+          <div class="step-connector"></div>
+          <div class="step-node" data-step="4">
+            <div class="step-num">4</div>
+            <div class="step-label">確認・完了</div>
+          </div>
+        </div>
+
+        <div class="booking-card">
+
+          <!-- ========================================================
+               STEP 1: VEHICLE SELECTION (Maker -> Disp -> Name -> Year -> Model)
+               ======================================================== -->
+          <div class="form-step active" id="step1">
+            <div class="step-header">
+              <span class="step-tag">STEP 1</span>
+              <h2 class="step-title">作業対象の車両を選択</h2>
+              <p class="step-subtitle">メーカーから順に絞り込んでください。規定オイル量やタイヤサイズが自動連携されます。</p>
+            </div>
+
+            <div class="vehicle-filter-form">
+              <!-- 1. メーカー -->
+              <div class="form-group">
+                <label for="filterMaker" class="form-label">
+                  <span class="step-badge-mini">1</span> メーカー <span class="required">必須</span>
+                </label>
+                <select id="filterMaker" class="form-control">
+                  <option value="">メーカーを選択してください</option>
+                  <option value="HONDA">HONDA (ホンダ)</option>
+                  <option value="Kawasaki">Kawasaki (カワサキ)</option>
+                  <option value="BMW">BMW</option>
+                  <option value="Harley-Davidson">Harley-Davidson (ハーレー)</option>
+                </select>
+              </div>
+
+              <!-- 2. 排気量 -->
+              <div class="form-group">
+                <label for="filterDisp" class="form-label">
+                  <span class="step-badge-mini">2</span> 排気量 <span class="required">必須</span>
+                </label>
+                <select id="filterDisp" class="form-control" disabled>
+                  <option value="">先にメーカーを選択してください</option>
+                </select>
+              </div>
+
+              <!-- 3. 車種 (車両名) -->
+              <div class="form-group">
+                <label for="filterName" class="form-label">
+                  <span class="step-badge-mini">3</span> 車種 (車両名) <span class="required">必須</span>
+                </label>
+                <select id="filterName" class="form-control" disabled>
+                  <option value="">先に排気量を選択してください</option>
+                </select>
+              </div>
+
+              <!-- 4. 年式 -->
+              <div class="form-group">
+                <label for="filterYear" class="form-label">
+                  <span class="step-badge-mini">4</span> 年式 <span class="required">必須</span>
+                </label>
+                <select id="filterYear" class="form-control" disabled>
+                  <option value="">先に車種を選択してください</option>
+                </select>
+              </div>
+
+              <!-- 5. 型式 -->
+              <div class="form-group">
+                <label for="filterModel" class="form-label">
+                  <span class="step-badge-mini">5</span> 型式 <span class="required">必須</span>
+                </label>
+                <select id="filterModel" class="form-control" disabled>
+                  <option value="">先に年式を選択してください</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Vehicle Detail Preview Card (With Image, Specs, Tire Sizes) -->
+            <div id="vehicleDetailPreview" class="vehicle-preview-card hidden">
+              <div class="preview-img-wrapper">
+                <img id="bikePreviewImage" src="" alt="車両写真" class="bike-preview-img" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22140%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20fill%3D%22%23e2e8f0%22%20width%3D%22100%25%22%20height%3D%22100%25%22%2F%3E%3Ctext%20fill%3D%22%2364748b%22%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E'">
+              </div>
+              <div class="preview-info-wrapper">
+                <div class="preview-title" id="previewBikeTitle">--</div>
+                <div class="preview-tags">
+                  <span class="preview-tag tag-disp" id="previewBikeDisp">--</span>
+                  <span class="preview-tag tag-year" id="previewBikeYear">--</span>
+                  <span class="preview-tag tag-model" id="previewBikeModel">--</span>
+                </div>
+                <div class="preview-spec-grid">
+                  <div class="spec-cell">
+                    <span class="spec-name">🛢️ オイル規定量</span>
+                    <span class="spec-value highlight-oil" id="previewBikeOil">--</span>
+                  </div>
+                  <div class="spec-cell">
+                    <span class="spec-name">🔄 フィルター時</span>
+                    <span class="spec-value" id="previewBikeFilter">--</span>
+                  </div>
+                  <div class="spec-cell">
+                    <span class="spec-name">🛞 Fタイヤ規定</span>
+                    <span class="spec-value spec-tire" id="previewBikeFrontTire">--</span>
+                  </div>
+                  <div class="spec-cell">
+                    <span class="spec-name">🛞 Rタイヤ規定</span>
+                    <span class="spec-value spec-tire" id="previewBikeRearTire">--</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer right">
+              <button class="btn btn-primary btn-block-mobile" id="toStep2Btn" disabled>
+                PIT作業を選択する <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+
+
+          <!-- ========================================================
+               STEP 2: PIT WORK & OIL SELECTION
+               ======================================================== -->
+          <div class="form-step" id="step2">
+            <div class="step-header">
+              <span class="step-tag">STEP 2</span>
+              <h2 class="step-title">ご希望のPIT作業をお選びください</h2>
+              <p class="step-subtitle">オイル交換・エレメント・タイヤ交換からお選びいただけます。</p>
+            </div>
+
+            <!-- Current Selected Bike Mini Banner -->
+            <div class="selected-bike-banner" id="step2BikeBanner">
+              <!-- Injected by JS -->
+            </div>
+
+            <div class="pit-work-section">
+              <h3 class="section-subheading">🔧 PIT作業メニュー (いずれか1つを選択)</h3>
+              <div class="pit-menu-list" id="pitWorkList">
+                <!-- Injected by JS:
+                     - エンジンオイル交換 ￥1,100
+                     - オイルエレメント交換 ￥1,980
+                     - タイヤ交換メニュー（スクーター判定に応じて125cc以下/126cc以上/一般）
+                -->
+              </div>
+            </div>
+
+            <!-- DCT Filter Add-on Option (Displayed only when bike has DCT and オイルエレメント交換 is selected) -->
+            <div class="dct-option-section hidden" id="dctOptionSection">
+              <div class="dct-callout-card">
+                <div class="dct-header">
+                  <span class="dct-badge">DCT搭載車 専用オプション</span>
+                  <span class="dct-price">+¥1,650～ (税込)</span>
+                </div>
+                <label class="custom-checkbox dct-checkbox-label">
+                  <input type="checkbox" id="dctFilterCheckbox">
+                  <span class="checkmark"></span>
+                  <span class="dct-text">
+                    <strong>DCTフィルターも追加で交換しますか？</strong>
+                    <span class="dct-subtext">デュアルクラッチトランスミッション専用のクラッチオイルフィルターも同時にリフレッシュします。</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Engine Oil Selection (Appears when エンジンオイル交換 or Harley oil-related work is chosen) -->
+            <div class="engine-oil-section" id="engineOilSection">
+              <div class="oil-section-header">
+                <h3 class="section-subheading" id="engineOilSectionTitle">🛢️ エンジンオイルの選択</h3>
+                <span class="sub-badge">オイル交換対象</span>
+              </div>
+              <div class="oil-cards-grid" id="oilCardsGrid">
+                <!-- 3 Engine Oil Choices or Harley Dedicated Engine Oil -->
+              </div>
+            </div>
+
+            <!-- Harley-Davidson Specialized Oil Additional Check (Primary / Trans) -->
+            <div class="harley-options-section hidden" id="harleyOilOptionsSection">
+              <div class="harley-box">
+                <div class="harley-box-header">
+                  <span class="harley-badge">Harley-Davidson 追加油脂交換</span>
+                  <span class="harley-sub">独立した油脂類を追加するか選択できます</span>
+                </div>
+                <p class="harley-desc">エンジンオイルに加えて、<strong>プライマリーオイル</strong>や<strong>トランスミッションオイル</strong>も追加で交換しますか？（それぞれ独立して選択可能）</p>
+
+                <div class="harley-oil-list" id="harleyOilListContainer">
+                  <!-- Dynamically populated: Primary Oil, Transmission Oil (or gear/chain for Sportster) -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Harley-Davidson Oil Filter Model Selection (Single Filter or Filter Set when Element Change is chosen) -->
+            <div class="harley-filter-select-section hidden" id="harleyFilterSelectSection">
+              <div class="harley-filter-box">
+                <div class="harley-box-header">
+                  <span class="harley-badge">Harley-Davidson 使用フィルター選択</span>
+                  <span class="harley-sub" id="harleyFilterBadgeSub">適合品番から選択</span>
+                </div>
+                <div id="filterSetNoticeBox" class="filter-set-notice-box hidden">
+                  <!-- Notified when all oils are selected + element change -->
+                </div>
+                <div class="form-group" style="margin-top: 0.5rem;">
+                  <label for="harleyFilterSelect" class="form-label" id="harleyFilterSelectLabel">
+                    使用するオイルフィルターをお選びください <span class="required">必須</span>
+                  </label>
+                  <select id="harleyFilterSelect" class="form-control">
+                    <!-- Populated dynamically: HD Genuine Black/Chrome, Aftermarket Black/Chrome, Sundance, or Filter Set Black/Silver -->
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer space-between">
+              <button class="btn btn-secondary" id="backToStep1Btn">← 車両選択へ戻る</button>
+              <div class="price-box-wrapper">
+                <div class="price-summary-preview">
+                  <span class="summary-label">作業工賃目安:</span>
+                  <span class="summary-amount" id="step2PricePreview">¥0～</span>
+                  <span class="tax-note">(税込)</span>
+                </div>
+                <button class="btn btn-primary" id="toStep3Btn" disabled>
+                  日時を選択する <span class="arrow">→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- ========================================================
+               STEP 3: DATE & TIME (FUTURE DATES ONLY, NO SAME-DAY) + CUSTOMER INFO
+               ======================================================== -->
+          <div class="form-step" id="step3">
+            <div class="step-header">
+              <span class="step-tag">STEP 3</span>
+              <h2 class="step-title">ご来店日時とお客様情報</h2>
+              <p class="step-subtitle">※当日のご予約は承っておりません。明日以降の日時をお選びください。</p>
+            </div>
+
+            <!-- Notice Banner for No Same Day -->
+            <div class="notice-callout">
+              <span class="callout-icon">ℹ️</span>
+              <div class="callout-text">
+                <strong>ご予約に関するご案内</strong><br>
+                PIT準備およびパーツ確保のため、<strong>翌日以降のご予約のみ</strong>承っております（本日はご選択いただけません）。
+              </div>
+            </div>
+
+            <!-- DateTime Pickers -->
+            <div class="datetime-layout">
+              <!-- Calendar Column -->
+              <div class="calendar-column">
+                <div class="calendar-header">
+                  <button type="button" class="btn-cal-nav" id="prevMonthBtn">‹</button>
+                  <span class="calendar-current" id="calCurrentMonth">2026年 10月</span>
+                  <button type="button" class="btn-cal-nav" id="nextMonthBtn">›</button>
+                </div>
+                <div class="calendar-days-header">
+                  <span class="day-sun">日</span>
+                  <span>月</span>
+                  <span>火</span>
+                  <span>水</span>
+                  <span>木</span>
+                  <span>金</span>
+                  <span class="day-sat">土</span>
+                </div>
+                <div class="calendar-grid" id="calendarDaysGrid">
+                  <!-- Populated by JS -->
+                </div>
+                <div class="cal-legend">
+                  <span class="legend-item"><span class="dot dot-avail"></span> 予約可能</span>
+                  <span class="legend-item"><span class="dot dot-few"></span> 残少</span>
+                  <span class="legend-item"><span class="dot dot-full"></span> 満車/不可</span>
+                </div>
+              </div>
+
+              <!-- Time Slot Column -->
+              <div class="timeslot-column">
+                <div class="timeslot-header">
+                  <span class="selected-date-badge" id="slotSelectedDateBadge">日付を選択してください</span>
+                  <span class="slot-note" id="pitDurationNote">※目安時間 約30〜60分</span>
+                </div>
+
+                <div class="slots-container" id="timeSlotsContainer">
+                  <div class="empty-state-card">
+                    <span class="empty-icon">📅</span>
+                    <p>カレンダーから明日以降のご希望日をタップしてください。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Customer Details Form -->
+            <div class="form-section-card" style="margin-top: 1.5rem;">
+              <h3 class="form-section-title">👤 お客様情報</h3>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="custName" class="form-label">お名前 <span class="required">必須</span></label>
+                  <input type="text" id="custName" class="form-control" placeholder="山田 太郎" required>
+                </div>
+                <div class="form-group">
+                  <label for="custKana" class="form-label">フリガナ <span class="required">必須</span></label>
+                  <input type="text" id="custKana" class="form-control" placeholder="ヤマダ タロウ" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="custPhone" class="form-label">電話番号 <span class="required">必須</span></label>
+                  <input type="tel" id="custPhone" class="form-control" placeholder="090-1234-5678" required>
+                </div>
+                <div class="form-group">
+                  <label for="custEmail" class="form-label">メールアドレス <span class="required">必須</span></label>
+                  <input type="email" id="custEmail" class="form-control" placeholder="yamada@example.com" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="custRemarks" class="form-label">ご要望・気になる点 (任意)</label>
+                <textarea id="custRemarks" class="form-control textarea" rows="2" placeholder="タイヤの銘柄指定やチェーン注油・持ち込み相談などありましたらご記入ください"></textarea>
+              </div>
+            </div>
+
+            <div class="card-footer space-between">
+              <button class="btn btn-secondary" id="backToStep2Btn">← 作業選択へ戻る</button>
+              <button class="btn btn-primary" id="toStep4Btn" disabled>
+                最終確認へ進む <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+
+
+          <!-- ========================================================
+               STEP 4: CONFIRMATION & COMPLETION
+               ======================================================== -->
+          <div class="form-step" id="step4">
+            <!-- Review Mode -->
+            <div id="step4ReviewPanel">
+              <div class="step-header">
+                <span class="step-tag">STEP 4</span>
+                <h2 class="step-title">ご予約内容の最終確認</h2>
+                <p class="step-subtitle">ご指定の内容をご確認の上、「予約を確定する」を押してください。</p>
+              </div>
+
+              <div class="confirmation-summary-card">
+                <!-- Vehicle Card Review -->
+                <div class="summary-block">
+                  <div class="block-title">🏍️ ご予約車両</div>
+                  <div class="review-vehicle-box" id="reviewVehicleContent">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+                <!-- DateTime Review -->
+                <div class="summary-block">
+                  <div class="block-title">📅 ご予約日時・ピット</div>
+                  <div class="block-content highlight-box" id="reviewDateTimeSlot">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+                <!-- PIT Works & Total Review -->
+                <div class="summary-block">
+                  <div class="block-title">🔧 PIT作業 & オイル</div>
+                  <div class="menu-receipt" id="reviewMenuList">
+                    <!-- Populated by JS -->
+                  </div>
+                  <div class="receipt-total">
+                    <span>合計予定目安工賃（税込）:</span>
+                    <span class="total-price" id="reviewTotalPrice">¥0～</span>
+                  </div>
+                  <div class="tax-disclaimer">※タイヤ本体代金や特殊部品代は当日店頭にて別途清算となります。</div>
+                </div>
+
+                <!-- Customer Info Review -->
+                <div class="summary-block">
+                  <div class="block-title">👤 お客様情報</div>
+                  <dl class="summary-dl" id="reviewCustomerInfo">
+                    <!-- Populated by JS -->
+                  </dl>
+                </div>
+              </div>
+
+              <div class="terms-box">
+                <label class="custom-checkbox">
+                  <input type="checkbox" id="termsAgreement">
+                  <span class="checkmark"></span>
+                  <span class="terms-text">
+                    当日のご来店案内及びキャンセルポリシー（予約日時の10分前までにご来店ください）に同意します。
+                  </span>
+                </label>
+              </div>
+
+              <div class="card-footer space-between">
+                <button class="btn btn-secondary" id="backToStep3Btn">← 情報を修正する</button>
+                <button class="btn btn-accent btn-large" id="submitBookingBtn" disabled>
+                  🚀 この内容で予約を確定する
+                </button>
+              </div>
+            </div>
+
+            <!-- Complete Ticket Mode -->
+            <div id="step4SuccessPanel" class="success-panel hidden">
+              <div class="success-animation-icon">🎉</div>
+              <h2 class="success-title">ご予約が完了いたしました！</h2>
+              <p class="success-desc">ご登録のメールアドレス宛に予約完了控えをお送りいたしました。<br>当日ピットにて愛車と共にお待ちしております。</p>
+
+              <div class="ticket-card">
+                <div class="ticket-header">
+                  <span class="ticket-badge">BIKE PIT APPOINTMENT TICKET</span>
+                  <span class="ticket-id" id="ticketReservationId">RESERV-0000</span>
+                </div>
+                <div class="ticket-body">
+                  <div class="ticket-item">
+                    <span class="label">ご予約日時</span>
+                    <span class="val font-strong" id="ticketDateTime">--</span>
+                  </div>
+                  <div class="ticket-item">
+                    <span class="label">ご予約車両</span>
+                    <span class="val font-strong" id="ticketCar">--</span>
+                  </div>
+                  <div class="ticket-item">
+                    <span class="label">PIT作業内容</span>
+                    <span class="val" id="ticketWorkList">--</span>
+                  </div>
+                  <div class="ticket-item">
+                    <span class="label">規定オイル量</span>
+                    <span class="val" id="ticketOilAmount">--</span>
+                  </div>
+                  <div class="ticket-item">
+                    <span class="label">お名前</span>
+                    <span class="val" id="ticketCustName">--</span>
+                  </div>
+                  <div class="ticket-item">
+                    <span class="label">目安工賃合計</span>
+                    <span class="val highlight-price" id="ticketPrice">--</span>
+                  </div>
+                </div>
+                <div class="ticket-footer">
+                  <span>店舗: ２りんかん バイクピット</span>
+                  <span class="note">※受付にて本画面またはお名前・予約番号をお伝えください</span>
+                </div>
+              </div>
+
+              <div class="success-actions">
+                <button class="btn btn-outline" id="printTicketBtn">🖨️ 予約票を印刷 / 保存</button>
+                <button class="btn btn-primary" id="resetNewBookingBtn">＋ 新しい予約を行う</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN DASHBOARD VIEW -->
+    <section id="adminDashboardView" class="view-panel">
+      <div class="app-container admin-container">
+        <div class="admin-topbar">
+          <div>
+            <div class="admin-badge">STORE MANAGEMENT</div>
+            <h1 class="admin-heading">店舗管理画面（PIT予約管理）</h1>
+            <p class="admin-sub">予約一覧、作業ステータス変更、CSV出力が行えます。</p>
+          </div>
+          <div class="admin-quick-actions">
+            <button class="btn btn-secondary btn-sm" id="adminSeedDataBtn">🔄 サンプル予約を追加</button>
+            <button class="btn btn-danger btn-sm" id="adminResetDataBtn">🗑️ 全データ初期化</button>
+          </div>
+        </div>
+
+        <!-- Metric stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-blue">📋</div>
+            <div class="stat-info">
+              <span class="stat-label">総予約数</span>
+              <span class="stat-value" id="statTotalBookings">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-yellow">⏳</div>
+            <div class="stat-info">
+              <span class="stat-label">受付中 / 確定</span>
+              <span class="stat-value" id="statConfirmedBookings">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-green">✅</div>
+            <div class="stat-info">
+              <span class="stat-label">作業完了済み</span>
+              <span class="stat-value" id="statCompletedBookings">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon bg-purple">💰</div>
+            <div class="stat-info">
+              <span class="stat-label">見込み工賃総額</span>
+              <span class="stat-value" id="statEstimatedRevenue">¥0～</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="admin-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="adminSearchInput" class="admin-search-input" placeholder="予約番号、お客様氏名、車種名、電話番号で検索...">
+          </div>
+          <div class="filter-controls">
+            <select id="adminStatusFilter" class="admin-select-filter">
+              <option value="ALL">全ステータス</option>
+              <option value="CONFIRMED">予約確定 (受付中)</option>
+              <option value="IN_PROGRESS">作業中</option>
+              <option value="COMPLETED">作業完了</option>
+              <option value="CANCELLED">キャンセル</option>
+            </select>
+            <button class="btn btn-secondary" id="adminExportCsvBtn">📥 CSV出力</button>
+          </div>
+        </div>
+
+        <!-- Reservation Table -->
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>予約番号</th>
+                  <th>ご予約日時</th>
+                  <th>お客様情報</th>
+                  <th>車両 (車種 / 排気量)</th>
+                  <th>PIT作業 / 工賃</th>
+                  <th>ステータス</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="adminReservationsTbody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Reservation Detail Modal -->
+  <div class="modal-backdrop hidden" id="bookingDetailModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalBookingId">予約詳細</h3>
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="modalDetailContent">
+        <!-- Injected by JS -->
+      </div>
+      <div class="modal-footer">
+        <div class="modal-status-actions" id="modalStatusActions">
+          <!-- Status buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toastNotification" class="toast-notification hidden">
+    <span class="toast-icon" id="toastIcon">ℹ️</span>
+    <span class="toast-message" id="toastMessage">通知メッセージ</span>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-brand">２りんかん バイクPIT作業WEB予約</div>
+      <p class="footer-copy">© 2026 ２りんかん. スマホ対応バイクピット予約</p>
+    </div>
+  </footer>
+
+  <script src="bikes_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
