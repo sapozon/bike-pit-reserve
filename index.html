@@ -28,6 +28,9 @@
         <button id="navAdminViewBtn" class="nav-tab">
           店舗管理画面 <span class="badge" id="adminBadgeCount">0</span>
         </button>
+        <button id="navEmailViewBtn" class="nav-tab">
+          店舗メール画面
+        </button>
       </nav>
     </div>
   </header>
@@ -557,6 +560,37 @@
           </div>
         </div>
 
+        <!-- Admin Calendar View Card -->
+        <div class="admin-calendar-card" style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 style="font-size:1.05rem; font-weight:800; color:#0f172a;">📅 PIT予約状況カレンダー</h3>
+              <p style="font-size:0.75rem; color:var(--text-muted);">日付ごとの予約件数・空き状況を確認できます（日付タップで絞り込み）</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="btn-cal-nav" id="adminPrevMonthBtn">‹</button>
+              <span style="font-weight:800; font-size:1rem;" id="adminCalCurrentMonth">2026年 10月</span>
+              <button type="button" class="btn-cal-nav" id="adminNextMonthBtn">›</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="adminCalClearFilterBtn" style="margin-left:6px;">全期間表示</button>
+            </div>
+          </div>
+          <div class="admin-cal-days-header" style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem;">
+            <span class="day-sun" style="color:#dc2626;">日</span>
+            <span>月</span>
+            <span>火</span>
+            <span>水</span>
+            <span>木</span>
+            <span>金</span>
+            <span class="day-sat" style="color:#2563eb;">土</span>
+          </div>
+          <div class="admin-calendar-grid" id="adminCalendarDaysGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">
+            <!-- Populated by JS -->
+          </div>
+          <div id="adminCalSelectedDateNote" style="margin-top:0.75rem; font-size:0.8rem; font-weight:700; color:var(--primary-color); display:none;">
+            <!-- Active date filter note -->
+          </div>
+        </div>
+
         <!-- Filter & Search Toolbar -->
         <div class="admin-toolbar">
           <div class="search-input-wrapper">
@@ -594,6 +628,171 @@
                 <!-- Dynamically populated rows -->
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STORE EMAIL & A4 DISPATCH SHEET VIEW (店舗メール画面) -->
+    <section id="storeEmailView" class="view-panel">
+      <div class="app-container email-container">
+        <!-- Control Header (Hidden when printed) -->
+        <div class="email-control-bar no-print">
+          <div>
+            <div class="admin-badge" style="background:#e0e7ff; color:#3730a3;">STORE NOTIFICATION & DISPATCH</div>
+            <h1 class="admin-heading">店舗メール画面（WEB予約受付通知・作業指示書）</h1>
+            <p class="admin-sub">お客様からの予約受信通知メールを再現。PIT現場用の<strong>A4用紙1枚印刷</strong>に対応しています。</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <select id="emailBookingSelector" class="form-control" style="max-width:280px; font-size:0.85rem; font-weight:700;">
+              <!-- Populated by JS with reservations -->
+            </select>
+            <button class="btn btn-primary" id="printEmailSheetBtn">🖨️ A4 1枚で印刷する</button>
+          </div>
+        </div>
+
+        <!-- Email Mockup Wrapper -->
+        <div class="email-mockup-card">
+          <!-- Email Client Header Mockup (Hidden when printed) -->
+          <div class="email-meta-header no-print">
+            <div class="email-meta-row">
+              <span class="email-meta-label">件名:</span>
+              <span class="email-meta-subject" id="emailMockSubject">【２りんかん WEB予約】PIT作業の予約が入りました (予約番号: PIT-XXXX)</span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">差出人:</span>
+              <span>２りんかん PIT予約システム &lt;pit-reserve@2rinkan.jp&gt;</span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">宛先:</span>
+              <span>２りんかん 店舗PIT作業担当者 各位 &lt;pit-shop@2rinkan.jp&gt;</span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">日時:</span>
+              <span id="emailMockReceivedAt">2026/10/06 10:00</span>
+            </div>
+          </div>
+
+          <!-- Printable Dispatch Document (Designed strictly for A4 Single Page) -->
+          <div class="a4-printable-sheet" id="a4PrintableSheet">
+            <div class="dispatch-header">
+              <div class="dispatch-logo-block">
+                <span class="dispatch-brand">２りんかん</span>
+                <span class="dispatch-title">バイクPIT作業指示書 兼 予約受付票</span>
+              </div>
+              <div class="dispatch-meta-block">
+                <div class="dispatch-id" id="printReserveId">PIT-8821</div>
+                <div class="dispatch-date" id="printIssuedAt">受付日時: 2026/10/06 10:00</div>
+              </div>
+            </div>
+
+            <!-- Notice bar -->
+            <div class="dispatch-alert">
+              ★ お客様WEB予約受付完了通知（現場ピットスタッフ用作業・部品確認シート）
+            </div>
+
+            <!-- Two-column Grid for Customer & Booking Schedule -->
+            <div class="dispatch-grid">
+              <div class="dispatch-box">
+                <div class="dispatch-box-title">👤 お客様情報</div>
+                <table class="dispatch-table">
+                  <tr><th>お客様氏名</th><td><strong id="printCustName" style="font-size:1.05rem;">--</strong> (<span id="printCustKana">--</span>) 様</td></tr>
+                  <tr><th>お電話番号</th><td><strong id="printCustPhone">--</strong></td></tr>
+                  <tr><th>メールアドレス</th><td id="printCustEmail">--</td></tr>
+                  <tr><th>ご要望・備考</th><td id="printCustRemarks">特になし</td></tr>
+                </table>
+              </div>
+
+              <div class="dispatch-box">
+                <div class="dispatch-box-title">📅 ピット作業予定日時</div>
+                <table class="dispatch-table">
+                  <tr><th>ご来店日時</th><td><strong id="printDateTime" style="font-size:1.15rem; color:#c2410c;">--</strong></td></tr>
+                  <tr><th>作業予定ピット</th><td>２りんかん バイクピット #1</td></tr>
+                  <tr><th>想定作業時間</th><td id="printDuration">約30分</td></tr>
+                  <tr><th>ステータス</th><td><span id="printStatusBadge" class="status-badge CONFIRMED">予約確定</span></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Vehicle & Specification Box -->
+            <div class="dispatch-box" style="margin-top:0.6rem;">
+              <div class="dispatch-box-title">🏍️ 入庫車両情報</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <div style="flex:1;">
+                  <table class="dispatch-table">
+                    <tr>
+                      <th style="width:110px;">メーカー・車種</th>
+                      <td><strong id="printBikeName" style="font-size:1.05rem;">--</strong></td>
+                    </tr>
+                    <tr>
+                      <th>排気量・年式・型式</th>
+                      <td id="printBikeDetails">--</td>
+                    </tr>
+                    <tr>
+                      <th>規定油脂量</th>
+                      <td id="printBikeOilSpec">--</td>
+                    </tr>
+                    <tr>
+                      <th>規定タイヤサイズ</th>
+                      <td id="printBikeTireSpec">--</td>
+                    </tr>
+                  </table>
+                </div>
+                <div id="printBikeImgContainer" style="width:100px; text-align:center;">
+                  <!-- Injected by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Work Details and Required Parts / Filters (Key Field for the Store) -->
+            <div class="dispatch-box" style="margin-top:0.6rem;">
+              <div class="dispatch-box-title">🔧 作業内容 ＆ 使用部品・指定油脂（現場準備用）</div>
+              <table class="dispatch-table parts-table">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th style="width:25%;">区分</th>
+                    <th style="width:50%;">作業内容 / 使用部品・オイル指定</th>
+                    <th style="width:25%; text-align:right;">参考工賃(税込)</th>
+                  </tr>
+                </thead>
+                <tbody id="printPartsTableBody">
+                  <!-- Injected by JS -->
+                </tbody>
+                <tfoot>
+                  <tr style="background:#fff7ed; font-weight:800;">
+                    <td colspan="2" style="text-align:right;">お見積り合計予定工賃（税込）:</td>
+                    <td style="text-align:right; font-size:1.1rem; color:#c2410c;" id="printTotalPrice">¥0～</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Mechanic Checklist & Store Sign-off Area -->
+            <div class="dispatch-check-area">
+              <div class="check-col">
+                <span class="check-title">【現場ピット点検チェック項目】</span>
+                <div class="check-list">
+                  <span>□ ドレンボルト規定トルク締付・新品ワッシャー交換</span>
+                  <span>□ オイル規定量ゲージ確認（暖機後再確認）</span>
+                  <span>□ オイル漏れ・滲み確認（フィルター・ドレン周り）</span>
+                  <span>□ 前後空気圧・ホイール締め付けトルク確認</span>
+                </div>
+              </div>
+              <div class="sign-col">
+                <div class="sign-box">
+                  <span class="sign-title">ピット作業担当者</span>
+                  <div class="sign-space">印</div>
+                </div>
+                <div class="sign-box">
+                  <span class="sign-title">受領・ダブルチェック</span>
+                  <div class="sign-space">印</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dispatch-footer">
+              <span>２りんかん ピットサービス課 / 本用紙は店頭受付後、作業完了までカルテとして保管してください。</span>
+            </div>
           </div>
         </div>
       </div>

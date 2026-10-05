@@ -131,6 +131,10 @@ const AppState = {
   selectedTimeSlot: null,            // 'HH:MM'
   calendarViewDate: new Date(),
 
+  // Admin Calendar
+  adminCalViewDate: new Date(),
+  adminCalSelectedDate: null,
+
   // Storage
   reservations: [],
   lastCompletedBooking: null
@@ -642,10 +646,9 @@ function updateSubsectionsVisibility() {
   const isHarleyBike = isHarley(bike);
 
   // 1. Engine Oil Selection (First selection in sequence)
-  // For normal bikes: shown when oil-change is selected.
-  // For Harley: shown whenever an oil-related work (oil-change or element-change) is selected.
+  // Displayed for both エンジンオイル交換 and オイルエレメント交換 (all bikes)
   const oilSection = document.getElementById('engineOilSection');
-  if (isHarleyBike ? isOilRelated : isOilChange) {
+  if (isOilRelated) {
     oilSection.classList.remove('hidden');
     renderEngineOilChoices();
   } else {
@@ -885,15 +888,15 @@ function renderEngineOilChoices() {
     card.className = 'oil-card selected';
     card.style.gridColumn = '1 / -1';
     card.innerHTML = `
-      <div style="display:flex; align-items:center; gap:12px;">
-        <img src="${hOil.img}" alt="ハーレーエンジンオイル" style="width:65px; height:65px; object-fit:contain; border-radius:4px; border:1px solid #fed7aa; background:#fff;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <img src="${hOil.img}" alt="ハーレーエンジンオイル" class="oil-card-img-large" style="width:100px; height:100px; object-fit:contain; border-radius:8px; border:1px solid #fed7aa; background:#fff; margin:0; flex-shrink:0;">
         <div style="flex:1;">
           <span class="oil-badge" style="background:#ffedd5; color:#c2410c;">ハーレー専用エンジンオイル</span>
-          <h4 class="oil-name" style="margin-top:2px;">${escapeHtml(hOil.name)}</h4>
-          <p class="oil-spec">${escapeHtml(hOil.desc)}</p>
-          <div class="oil-meta" style="margin-top:4px;">
+          <h4 class="oil-name" style="margin-top:4px; font-size:1.05rem;">${escapeHtml(hOil.name)}</h4>
+          <p class="oil-spec" style="font-size:0.8rem;">${escapeHtml(hOil.desc)}</p>
+          <div class="oil-meta" style="margin-top:6px;">
             <span class="oil-visc">粘度規格: 20W-50 専用設計</span>
-            <span class="oil-price">+¥${hOil.price.toLocaleString()}～</span>
+            <span class="oil-price" style="font-size:1.15rem; color:#c2410c;">+¥${hOil.price.toLocaleString()}～</span>
           </div>
         </div>
       </div>
@@ -911,11 +914,11 @@ function renderEngineOilChoices() {
     card.dataset.oilId = oil.id;
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div class="oil-card-top">
         <span class="oil-badge">${escapeHtml(oil.badge)}</span>
-        ${oil.img ? `<img src="${oil.img}" alt="オイル" style="width:38px; height:38px; object-fit:contain;" onerror="this.style.display='none'">` : ''}
       </div>
-      <h4 class="oil-name">${escapeHtml(oil.name)}</h4>
+      ${oil.img ? `<img src="${oil.img}" alt="${escapeHtml(oil.name)}" class="oil-card-img-large" onerror="this.style.display='none'">` : ''}
+      <h4 class="oil-name" style="text-align:center;">${escapeHtml(oil.name)}</h4>
       <p class="oil-spec">${escapeHtml(oil.spec)}</p>
       <div class="oil-meta">
         <span class="oil-visc">粘度目安: ${escapeHtml(oil.viscosity)}</span>
@@ -942,8 +945,8 @@ function calculateStep2Price() {
 
   let total = work.price;
 
-  // Engine oil cost
-  if (work.id === 'oil-change') {
+  // Engine oil cost (Applies to both oil-change and element-change)
+  if (work.id === 'oil-change' || work.id === 'element-change') {
     if (isHarley(bike)) {
       total += HARLEY_OILS_MASTER.engine.price;
     } else {
@@ -1293,7 +1296,7 @@ function prepareStep4Review() {
     </div>
   `;
 
-  if (work.id === 'oil-change') {
+  if (work.id === 'oil-change' || work.id === 'element-change') {
     if (isHarleyBike) {
       receiptHtml += `
         <div class="receipt-item sub-item">
@@ -1386,7 +1389,7 @@ function submitBooking() {
   const work = workItems.find(w => w.id === AppState.selectedWorkId) || { name: '' };
 
   let oilName = '';
-  if (work.id === 'oil-change') {
+  if (work.id === 'oil-change' || work.id === 'element-change') {
     if (isHarleyBike) {
       oilName = HARLEY_OILS_MASTER.engine.name;
     } else {
@@ -1518,7 +1521,7 @@ function resetBookingFlow() {
 }
 
 // ============================================================================
-// ADMIN DASHBOARD CONTROLLER
+// ADMIN DASHBOARD & CALENDAR CONTROLLER
 // ============================================================================
 function updateAdminDashboard() {
   const reservations = AppState.reservations;
@@ -1539,8 +1542,23 @@ function updateAdminDashboard() {
   document.getElementById('statEstimatedRevenue').textContent = `¥${totalRevenue.toLocaleString()}～`;
 
   updateAdminBadge();
+  renderAdminCalendar();
 
-  const filtered = reservations.filter(r => {
+  // Apply calendar date filter if active
+  let filtered = reservations;
+  if (AppState.adminCalSelectedDate) {
+    filtered = filtered.filter(r => r.date === AppState.adminCalSelectedDate);
+    const noteEl = document.getElementById('adminCalSelectedDateNote');
+    if (noteEl) {
+      noteEl.style.display = 'block';
+      noteEl.textContent = `📌 絞り込み中: ${AppState.adminCalSelectedDate} の予約 (${filtered.length}件)`;
+    }
+  } else {
+    const noteEl = document.getElementById('adminCalSelectedDateNote');
+    if (noteEl) noteEl.style.display = 'none';
+  }
+
+  filtered = filtered.filter(r => {
     const matchStatus = filterVal === 'ALL' || r.status === filterVal;
     if (!matchStatus) return false;
 
@@ -1612,6 +1630,72 @@ function updateAdminDashboard() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function renderAdminCalendar() {
+  const container = document.getElementById('adminCalendarDaysGrid');
+  if (!container) return;
+
+  const currentYear = AppState.adminCalViewDate.getFullYear();
+  const currentMonth = AppState.adminCalViewDate.getMonth();
+
+  const titleEl = document.getElementById('adminCalCurrentMonth');
+  if (titleEl) {
+    titleEl.textContent = `${currentYear}年 ${currentMonth + 1}月`;
+  }
+
+  container.innerHTML = '';
+
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  // Booking count per date in this month
+  const countByDate = {};
+  AppState.reservations.forEach(r => {
+    if (r.status !== 'CANCELLED') {
+      countByDate[r.date] = (countByDate[r.date] || 0) + 1;
+    }
+  });
+
+  // Empty leading days
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'admin-cal-day-cell empty';
+    container.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+    const count = countByDate[dateStr] || 0;
+    const isSelected = AppState.adminCalSelectedDate === dateStr;
+
+    const cell = document.createElement('div');
+    cell.className = `admin-cal-day-cell ${isSelected ? 'selected' : ''} ${count > 0 ? 'has-bookings' : ''}`;
+    if (dayOfWeek === 0) cell.classList.add('sun');
+    if (dayOfWeek === 6) cell.classList.add('sat');
+
+    let badgeHtml = '';
+    if (count > 0) {
+      badgeHtml = `<span class="admin-cal-badge">${count}件</span>`;
+    }
+
+    cell.innerHTML = `
+      <div class="day-num">${day}</div>
+      ${badgeHtml}
+    `;
+
+    cell.addEventListener('click', () => {
+      if (AppState.adminCalSelectedDate === dateStr) {
+        AppState.adminCalSelectedDate = null; // Toggle off
+      } else {
+        AppState.adminCalSelectedDate = dateStr;
+      }
+      updateAdminDashboard();
+    });
+
+    container.appendChild(cell);
+  }
 }
 
 function updateAdminBadge() {
@@ -1763,31 +1847,217 @@ function exportReservationsToCsv() {
 }
 
 // ============================================================================
+// STORE EMAIL NOTIFICATION & A4 PRINTABLE DISPATCH SHEET
+// ============================================================================
+function renderStoreEmailView(targetBookingId) {
+  const selector = document.getElementById('emailBookingSelector');
+  if (!selector) return;
+
+  // Populate booking selector
+  selector.innerHTML = '';
+  if (!AppState.reservations.length) {
+    selector.innerHTML = `<option value="">予約データがありません</option>`;
+    return;
+  }
+
+  AppState.reservations.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `${r.date} ${r.time} - ${r.customer.name}様 (${r.bike.maker} ${r.bike.name})`;
+    selector.appendChild(opt);
+  });
+
+  let selectedId = targetBookingId || selector.value;
+  if (!selectedId && AppState.reservations.length > 0) {
+    selectedId = AppState.reservations[0].id;
+  }
+  selector.value = selectedId;
+
+  fillStoreEmailDetails(selectedId);
+}
+
+function fillStoreEmailDetails(bookingId) {
+  const booking = AppState.reservations.find(r => r.id === bookingId);
+  if (!booking) return;
+
+  // Email meta header
+  document.getElementById('emailMockSubject').textContent = `【２りんかん WEB予約】PIT作業の予約が入りました (予約番号: ${booking.id} / ${booking.customer.name}様)`;
+  document.getElementById('emailMockReceivedAt').textContent = booking.createdAt || formatDateYMD(new Date());
+
+  // A4 Printable Sheet
+  document.getElementById('printReserveId').textContent = booking.id;
+  document.getElementById('printIssuedAt').textContent = `受付日時: ${booking.createdAt || formatDateYMD(new Date())}`;
+
+  // Customer info
+  document.getElementById('printCustName').textContent = booking.customer.name;
+  document.getElementById('printCustKana').textContent = booking.customer.kana || '--';
+  document.getElementById('printCustPhone').textContent = booking.customer.phone;
+  document.getElementById('printCustEmail').textContent = booking.customer.email || '未記入';
+  document.getElementById('printCustRemarks').textContent = booking.customer.remarks || '特になし';
+
+  // Schedule info
+  document.getElementById('printDateTime').textContent = `${booking.date} ${booking.time}`;
+  document.getElementById('printDuration').textContent = `約${booking.durationMin || 30}分`;
+  const statusBadge = document.getElementById('printStatusBadge');
+  statusBadge.className = `status-badge ${booking.status}`;
+  statusBadge.textContent = {
+    CONFIRMED: '予約確定',
+    IN_PROGRESS: '作業中',
+    COMPLETED: '作業完了',
+    CANCELLED: 'キャンセル'
+  }[booking.status] || booking.status;
+
+  // Vehicle info
+  document.getElementById('printBikeName').textContent = `${booking.bike.maker} ${booking.bike.name}`;
+  document.getElementById('printBikeDetails').textContent = `${booking.bike.cat || booking.bike.disp} | 年式: ${booking.bike.year || '未設定'} | 型式: ${booking.bike.model || '未設定'}`;
+  
+  let oilSpecStr = `エンジン規定量: ${booking.bike.oil || 'ー'}`;
+  if (booking.bike.primaryOil) oilSpecStr += ` / プライマリ規定量: ${booking.bike.primaryOil}`;
+  if (booking.bike.transOil) oilSpecStr += ` / ミッション規定量: ${booking.bike.transOil}`;
+  document.getElementById('printBikeOilSpec').textContent = oilSpecStr;
+
+  document.getElementById('printBikeTireSpec').textContent = `F: ${booking.bike.frontTire || 'ー'} / R: ${booking.bike.rearTire || 'ー'}`;
+
+  const imgContainer = document.getElementById('printBikeImgContainer');
+  if (booking.bike.img) {
+    imgContainer.innerHTML = `<img src="${booking.bike.img}" style="max-width:90px; max-height:75px; object-fit:contain; border-radius:4px; border:1px solid #cbd5e1;" alt="車両写真" onerror="this.style.display='none'">`;
+  } else {
+    imgContainer.innerHTML = '';
+  }
+
+  // Work Details and Required Parts / Oils
+  const tbody = document.getElementById('printPartsTableBody');
+  tbody.innerHTML = '';
+
+  const isHarleyBike = isHarley(booking.bike);
+
+  // 1. Main PIT labor
+  const mainRow = document.createElement('tr');
+  mainRow.innerHTML = `
+    <td><strong>基本作業工賃</strong></td>
+    <td>
+      <strong style="color:#0f172a;">${escapeHtml(booking.workName)}</strong>
+      <div style="font-size:0.75rem; color:#64748b;">標準ピット作業 (${booking.durationMin || 30}分)</div>
+    </td>
+    <td style="text-align:right; font-weight:700;">¥${(booking.workPrice || 1100).toLocaleString()}～</td>
+  `;
+  tbody.appendChild(mainRow);
+
+  // 2. Engine Oil (if applicable)
+  if (booking.oilName) {
+    const oilRow = document.createElement('tr');
+    oilRow.innerHTML = `
+      <td><span style="color:#2563eb; font-weight:700;">使用エンジンオイル</span></td>
+      <td>
+        <strong style="color:#2563eb;">${escapeHtml(booking.oilName)}</strong>
+        <div style="font-size:0.75rem; color:#475569;">
+          規定量: ${booking.bike.oil || '規定量'}${isHarleyBike ? ' (※ハーレー専用ボトル供給)' : ' (※店頭専用量り売り供給)'}
+        </div>
+      </td>
+      <td style="text-align:right; font-weight:700;">${booking.oilPrice ? `+¥${booking.oilPrice.toLocaleString()}～` : '工賃に含む'}</td>
+    `;
+    tbody.appendChild(oilRow);
+  }
+
+  // 3. Oil Filter / Element details
+  if (booking.workId === 'element-change' || (booking.workName && booking.workName.includes('エレメント'))) {
+    const filterRow = document.createElement('tr');
+    let filterPartText = '車種適合エンジンオイルフィルター（パッキン/Oリング含む）';
+    if (booking.harleyDetails && booking.harleyDetails.filterChoice) {
+      filterPartText = `【ハーレー指定品】${booking.harleyDetails.filterChoice}`;
+    }
+
+    filterRow.innerHTML = `
+      <td><span style="color:#d97706; font-weight:700;">使用オイルフィルター</span></td>
+      <td>
+        <strong style="color:#b45309;">${escapeHtml(filterPartText)}</strong>
+        <div style="font-size:0.75rem; color:#475569;">取付時Oリング部オイル塗布・規定トルク管理</div>
+      </td>
+      <td style="text-align:right; font-weight:700;">作業内包</td>
+    `;
+    tbody.appendChild(filterRow);
+  }
+
+  // 4. DCT Filter (if selected)
+  if (booking.dctAdded) {
+    const dctRow = document.createElement('tr');
+    dctRow.innerHTML = `
+      <td><span style="color:#7c3aed; font-weight:700;">追加部品 (DCT)</span></td>
+      <td>
+        <strong style="color:#6d28d9;">ホンダ純正DCTクラッチフィルター ＆ Oリング</strong>
+        <div style="font-size:0.75rem; color:#475569;">DCTクラッチカバー脱着・フィルター交換</div>
+      </td>
+      <td style="text-align:right; font-weight:700;">+¥1,650～</td>
+    `;
+    tbody.appendChild(dctRow);
+  }
+
+  // 5. Harley Additional Oils
+  if (booking.harleyDetails) {
+    if (booking.harleyDetails.primaryAdded) {
+      const pRow = document.createElement('tr');
+      pRow.innerHTML = `
+        <td><span style="color:#c2410c; font-weight:700;">追加油脂 (プライマリ)</span></td>
+        <td>
+          <strong style="color:#c2410c;">ハーレー専用プライマリーオイル (規定量: ${booking.bike.primaryOil || '要確認'})</strong>
+          <div style="font-size:0.75rem; color:#475569;">チェーンケースドレン＆インスペクションカバー点検</div>
+        </td>
+        <td style="text-align:right; font-weight:700;">+¥4,000～</td>
+      `;
+      tbody.appendChild(pRow);
+    }
+    if (booking.harleyDetails.transAdded) {
+      const tRow = document.createElement('tr');
+      tRow.innerHTML = `
+        <td><span style="color:#c2410c; font-weight:700;">追加油脂 (ミッション)</span></td>
+        <td>
+          <strong style="color:#c2410c;">ハーレー専用トランスミッションオイル (規定量: ${booking.bike.transOil || '要確認'})</strong>
+          <div style="font-size:0.75rem; color:#475569;">ギヤボックストランスミッションフルード交換</div>
+        </td>
+        <td style="text-align:right; font-weight:700;">+¥4,000～</td>
+      `;
+      tbody.appendChild(tRow);
+    }
+  }
+
+  document.getElementById('printTotalPrice').textContent = `¥${booking.totalPrice.toLocaleString()}～ (税込)`;
+}
+
+// ============================================================================
 // EVENTS BINDING
 // ============================================================================
 function bindEventHandlers() {
   const userBtn = document.getElementById('navUserViewBtn');
   const adminBtn = document.getElementById('navAdminViewBtn');
+  const emailBtn = document.getElementById('navEmailViewBtn');
   const userView = document.getElementById('userReservationView');
   const adminView = document.getElementById('adminDashboardView');
+  const emailView = document.getElementById('storeEmailView');
 
-  userBtn.addEventListener('click', () => {
-    userBtn.classList.add('active');
-    adminBtn.classList.remove('active');
-    userView.classList.add('active');
-    adminView.classList.remove('active');
-  });
+  function switchTab(target) {
+    [userBtn, adminBtn, emailBtn].forEach(btn => btn && btn.classList.remove('active'));
+    [userView, adminView, emailView].forEach(view => view && view.classList.remove('active'));
 
-  adminBtn.addEventListener('click', () => {
-    adminBtn.classList.add('active');
-    userBtn.classList.remove('active');
-    adminView.classList.add('active');
-    userView.classList.remove('active');
-    updateAdminDashboard();
-  });
+    if (target === 'user') {
+      userBtn.classList.add('active');
+      userView.classList.add('active');
+    } else if (target === 'admin') {
+      adminBtn.classList.add('active');
+      adminView.classList.add('active');
+      updateAdminDashboard();
+    } else if (target === 'email') {
+      if (emailBtn) emailBtn.classList.add('active');
+      if (emailView) emailView.classList.add('active');
+      renderStoreEmailView();
+    }
+  }
+
+  userBtn.addEventListener('click', () => switchTab('user'));
+  adminBtn.addEventListener('click', () => switchTab('admin'));
+  if (emailBtn) emailBtn.addEventListener('click', () => switchTab('email'));
 
   document.getElementById('brandLogo').addEventListener('click', () => {
-    userBtn.click();
+    switchTab('user');
   });
 
   // Step 1 to 2
@@ -1881,11 +2151,54 @@ function bindEventHandlers() {
   document.getElementById('adminResetDataBtn').addEventListener('click', () => {
     if (confirm('全ての予約データをリセットしますか？')) {
       AppState.reservations = [];
+      AppState.adminCalSelectedDate = null;
       saveReservations();
       updateAdminDashboard();
       showToast('全データをリセットしました', 'info');
     }
   });
+
+  // Admin Calendar Controls
+  const adminPrevMonthBtn = document.getElementById('adminPrevMonthBtn');
+  if (adminPrevMonthBtn) {
+    adminPrevMonthBtn.addEventListener('click', () => {
+      const cur = AppState.adminCalViewDate;
+      AppState.adminCalViewDate = new Date(cur.getFullYear(), cur.getMonth() - 1, 1);
+      renderAdminCalendar();
+    });
+  }
+
+  const adminNextMonthBtn = document.getElementById('adminNextMonthBtn');
+  if (adminNextMonthBtn) {
+    adminNextMonthBtn.addEventListener('click', () => {
+      const cur = AppState.adminCalViewDate;
+      AppState.adminCalViewDate = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+      renderAdminCalendar();
+    });
+  }
+
+  const adminCalClearFilterBtn = document.getElementById('adminCalClearFilterBtn');
+  if (adminCalClearFilterBtn) {
+    adminCalClearFilterBtn.addEventListener('click', () => {
+      AppState.adminCalSelectedDate = null;
+      updateAdminDashboard();
+    });
+  }
+
+  // Store Email Controls
+  const emailBookingSelector = document.getElementById('emailBookingSelector');
+  if (emailBookingSelector) {
+    emailBookingSelector.addEventListener('change', (e) => {
+      fillStoreEmailDetails(e.target.value);
+    });
+  }
+
+  const printEmailSheetBtn = document.getElementById('printEmailSheetBtn');
+  if (printEmailSheetBtn) {
+    printEmailSheetBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
 
   // Modal Close
   document.getElementById('modalCloseBtn').addEventListener('click', () => {
@@ -1928,3 +2241,4 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
