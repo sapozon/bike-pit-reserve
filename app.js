@@ -716,16 +716,23 @@ function renderPitWorkList() {
   }
 
   workItems.forEach(work => {
-    const isSelected = AppState.selectedWorkId === work.id;
+    const isTire = work.id && work.id.includes('tire');
+    const isSelected = !isTire && AppState.selectedWorkId === work.id;
     const card = document.createElement('div');
-    card.className = `pit-work-card ${isSelected ? 'selected' : ''}`;
+    card.className = `pit-work-card ${isSelected ? 'selected' : ''} ${isTire ? 'disabled' : ''}`;
     card.dataset.workId = work.id;
+    if (isTire) {
+      card.setAttribute('aria-disabled', 'true');
+    }
 
     card.innerHTML = `
       <div class="work-left">
         <div class="work-check">${isSelected ? '●' : ''}</div>
         <div class="work-text">
-          <span class="work-title">${escapeHtml(work.name)}</span>
+          <span class="work-title">
+            ${escapeHtml(work.name)}
+            ${isTire ? '<span class="work-badge-disabled">WEB予約休止中（店頭・電話受付）</span>' : ''}
+          </span>
         </div>
       </div>
       <div class="work-right">
@@ -734,13 +741,15 @@ function renderPitWorkList() {
       </div>
     `;
 
-    card.addEventListener('click', () => {
-      AppState.selectedWorkId = work.id;
-      AppState.selectedWorkItem = work;
-      renderPitWorkList();
-      updateSubsectionsVisibility();
-      updateStep2Price();
-    });
+    if (!isTire) {
+      card.addEventListener('click', () => {
+        AppState.selectedWorkId = work.id;
+        AppState.selectedWorkItem = work;
+        renderPitWorkList();
+        updateSubsectionsVisibility();
+        updateStep2Price();
+      });
+    }
 
     container.appendChild(card);
   });
