@@ -2325,10 +2325,11 @@ function bindEventHandlers() {
   const userView = document.getElementById('userReservationView');
   const adminView = document.getElementById('adminDashboardView');
   const emailView = document.getElementById('storeEmailView');
+  const completeView = document.getElementById('bookingCompleteView');
 
   function switchTab(target) {
     [userBtn, adminBtn, emailBtn].forEach(btn => btn && btn.classList.remove('active'));
-    [userView, adminView, emailView].forEach(view => view && view.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(view => view.classList.remove('active'));
 
     if (target === 'user') {
       userBtn.classList.add('active');
