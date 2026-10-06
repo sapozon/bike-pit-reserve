@@ -498,6 +498,180 @@ body {
   }
 }
 
+/* Agree Action Buttons & Agreed Summary Pills */
+.notice-action-bar,
+.warning-action-bar {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(0,0,0,0.12);
+  text-align: center;
+}
+
+.btn-agree {
+  width: 100%;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 0.75rem 1.2rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-warning.btn-agree {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+}
+.btn-warning.btn-agree:hover {
+  background: #d97706;
+}
+
+.btn-danger.btn-agree {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+}
+.btn-danger.btn-agree:hover {
+  background: #dc2626;
+}
+
+.notice-agreed-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.warning-agreed-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.btn-text-reopen {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Locked Form Section State (Before Agreement) */
+.vehicle-filter-form.locked,
+.pit-work-section.locked {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(40%);
+  user-select: none;
+  position: relative;
+}
+
+/* Tire Selection Section Styles */
+.tire-selection-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border-color);
+}
+
+.tire-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.35rem;
+}
+
+.tire-section-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.tire-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.tire-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tire-card:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.tire-card.selected {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.tire-card-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-bottom: 6px;
+  align-self: flex-start;
+}
+
+.tire-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.tire-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.tire-card-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0284c7;
+  text-align: right;
+  margin-top: auto;
+}
+
 /* Vehicle Filter Form */
 .vehicle-filter-form {
   display: flex;

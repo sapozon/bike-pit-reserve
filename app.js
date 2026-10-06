@@ -61,8 +61,50 @@ const NORMAL_ENGINE_OILS = [
     viscosity: '10W-40 / 10W-50',
     extraPrice: 3850,
     img: 'data/オイル/通常量り売/image/oil_item_3_3.png'
+  },
+  {
+    id: 'oil-other',
+    name: 'その他 (銘柄指定・店頭相談)',
+    badge: 'ご希望オイルを相談・指定',
+    spec: 'ワコーズ、モチュール300V、純正オイル等、店頭在庫またはお取り寄せのご相談を承ります。',
+    viscosity: '指定・相談',
+    extraPrice: 0,
+    img: ''
   }
 ];
+
+// --- Tire Options Master ---
+const TIRE_OPTIONS_MASTER = [
+  {
+    id: 'tire-standard',
+    badge: '当店おすすめ・標準',
+    title: 'スタンダードタイヤ (純正同等)',
+    desc: '耐摩耗性と安全性を両立した定番モデル。通勤通学や日常走行に最適。',
+    priceNote: 'タイヤ代金は当日店頭清算'
+  },
+  {
+    id: 'tire-touring',
+    badge: 'ロングライフ＆高ウェット性能',
+    title: 'ツーリングタイヤ (高耐久)',
+    desc: '雨天時のグリップ力と長寿命を追求。週末のロングツーリングや高速走行に。',
+    priceNote: 'タイヤ代金は当日店頭清算'
+  },
+  {
+    id: 'tire-sport',
+    badge: 'ハイグリップ・スポーツ',
+    title: 'スポーツ/ハイグリップタイヤ',
+    desc: 'コーナリング性能とクイックな旋回性を高めたハイパフォーマンスモデル。',
+    priceNote: 'タイヤ代金は当日店頭清算'
+  },
+  {
+    id: 'tire-other',
+    badge: '銘柄指定・相談',
+    title: 'その他 (特定銘柄・店頭相談)',
+    desc: 'ご希望のタイヤ銘柄・サイズ（ミシュラン、ピレリ、ダンロップ等）を指定・相談できます。',
+    priceNote: 'タイヤ代金は当日店頭清算'
+  }
+];
+
 
 // --- Harley-Davidson Dedicated Oil Master (from data/オイル/ハーレー用) ---
 const HARLEY_OILS_MASTER = {
@@ -123,8 +165,17 @@ const AppState = {
   harleyUseFilterSet: false,         // True when all oils are selected and user opts for filter set
   selectedHarleyFilterChoice: '',    // Single filter品番 or Set品番
 
+  // Agreements
+  preNoticeAgreed: false,
+  workWarningAgreed: false,
+
   // Engine Oil Selection
   selectedOilId: 'oil-4trs',
+  selectedOilOtherText: '',
+
+  // Tire Selection (When tire work chosen)
+  selectedTireId: 'tire-standard',
+  selectedTireOtherText: '',
 
   // Step 3: Date & Customer
   selectedDate: null,                // 'YYYY-MM-DD' (Tomorrow or later)
@@ -690,6 +741,18 @@ function updateSubsectionsVisibility() {
     const chk = document.getElementById('dctFilterCheckbox');
     if (chk) chk.checked = false;
   }
+
+  // 5. Tire Selection Section (Displayed when any tire work is selected)
+  const isTireRelated = AppState.selectedWorkId && AppState.selectedWorkId.includes('tire');
+  const tireSection = document.getElementById('tireSelectionSection');
+  if (tireSection) {
+    if (isTireRelated) {
+      tireSection.classList.remove('hidden');
+      renderTireChoices();
+    } else {
+      tireSection.classList.add('hidden');
+    }
+  }
 }
 
 // Render Harley Specialized Oil Options (Primary, Trans - Independent selections)
@@ -906,23 +969,29 @@ function renderEngineOilChoices() {
     return;
   }
 
-  titleEl.textContent = '🛢️ エンジンオイルの種類 (3種類から選択)';
+  titleEl.textContent = '🛢️ エンジンオイルの種類 (3種またはその他指定)';
+  const otherInputWrapper = document.getElementById('oilOtherInputWrapper');
+
   NORMAL_ENGINE_OILS.forEach(oil => {
     const isSelected = AppState.selectedOilId === oil.id;
     const card = document.createElement('div');
     card.className = `oil-card ${isSelected ? 'selected' : ''}`;
     card.dataset.oilId = oil.id;
 
+    const imgHtml = oil.img 
+      ? `<img src="${oil.img}" alt="${escapeHtml(oil.name)}" class="oil-card-img-large" onerror="this.style.display='none'">` 
+      : `<div style="height:70px; display:flex; align-items:center; justify-content:center; font-size:2rem; background:#fff7ed; border-radius:6px; margin-bottom:8px;">📝</div>`;
+
     card.innerHTML = `
       <div class="oil-card-top">
         <span class="oil-badge">${escapeHtml(oil.badge)}</span>
       </div>
-      ${oil.img ? `<img src="${oil.img}" alt="${escapeHtml(oil.name)}" class="oil-card-img-large" onerror="this.style.display='none'">` : ''}
+      ${imgHtml}
       <h4 class="oil-name" style="text-align:center;">${escapeHtml(oil.name)}</h4>
       <p class="oil-spec">${escapeHtml(oil.spec)}</p>
       <div class="oil-meta">
         <span class="oil-visc">粘度目安: ${escapeHtml(oil.viscosity)}</span>
-        <span class="oil-price">+¥${oil.extraPrice.toLocaleString()}～</span>
+        <span class="oil-price">${oil.extraPrice > 0 ? `+¥${oil.extraPrice.toLocaleString()}～` : '店頭ご相談'}</span>
       </div>
     `;
 
@@ -930,12 +999,92 @@ function renderEngineOilChoices() {
       AppState.selectedOilId = oil.id;
       document.querySelectorAll('.oil-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+
+      if (otherInputWrapper) {
+        if (oil.id === 'oil-other') {
+          otherInputWrapper.classList.remove('hidden');
+        } else {
+          otherInputWrapper.classList.add('hidden');
+        }
+      }
+
       updateStep2Price();
     });
 
     container.appendChild(card);
   });
+
+  if (otherInputWrapper) {
+    if (AppState.selectedOilId === 'oil-other') {
+      otherInputWrapper.classList.remove('hidden');
+    } else {
+      otherInputWrapper.classList.add('hidden');
+    }
+    const txtInput = document.getElementById('oilOtherText');
+    if (txtInput) {
+      txtInput.value = AppState.selectedOilOtherText || '';
+      txtInput.oninput = () => {
+        AppState.selectedOilOtherText = txtInput.value.trim();
+      };
+    }
+  }
 }
+
+// Render Tire Choices for Tire Change Work
+function renderTireChoices() {
+  const container = document.getElementById('tireCardsGrid');
+  const otherInputWrapper = document.getElementById('tireOtherInputWrapper');
+  if (!container) return;
+  container.innerHTML = '';
+
+  TIRE_OPTIONS_MASTER.forEach(tire => {
+    const isSelected = AppState.selectedTireId === tire.id;
+    const card = document.createElement('div');
+    card.className = `tire-card ${isSelected ? 'selected' : ''}`;
+    card.dataset.tireId = tire.id;
+
+    card.innerHTML = `
+      <div>
+        <span class="tire-card-badge">${escapeHtml(tire.badge)}</span>
+        <h4 class="tire-card-title">${escapeHtml(tire.title)}</h4>
+        <p class="tire-card-desc">${escapeHtml(tire.desc)}</p>
+      </div>
+      <div class="tire-card-price">${escapeHtml(tire.priceNote)}</div>
+    `;
+
+    card.addEventListener('click', () => {
+      AppState.selectedTireId = tire.id;
+      document.querySelectorAll('.tire-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+
+      if (otherInputWrapper) {
+        if (tire.id === 'tire-other') {
+          otherInputWrapper.classList.remove('hidden');
+        } else {
+          otherInputWrapper.classList.add('hidden');
+        }
+      }
+    });
+
+    container.appendChild(card);
+  });
+
+  if (otherInputWrapper) {
+    if (AppState.selectedTireId === 'tire-other') {
+      otherInputWrapper.classList.remove('hidden');
+    } else {
+      otherInputWrapper.classList.add('hidden');
+    }
+    const txtInput = document.getElementById('tireOtherText');
+    if (txtInput) {
+      txtInput.value = AppState.selectedTireOtherText || '';
+      txtInput.oninput = () => {
+        AppState.selectedTireOtherText = txtInput.value.trim();
+      };
+    }
+  }
+}
+
 
 function calculateStep2Price() {
   const bike = AppState.selectedBike;
@@ -1356,6 +1505,21 @@ function prepareStep4Review() {
     }
   }
 
+  // Tire selection add-on receipt
+  if (work.id && work.id.includes('tire')) {
+    const tire = TIRE_OPTIONS_MASTER.find(t => t.id === AppState.selectedTireId);
+    let tireDescStr = tire ? tire.title : 'スタンダードタイヤ';
+    if (AppState.selectedTireId === 'tire-other' && AppState.selectedTireOtherText) {
+      tireDescStr += ` (${AppState.selectedTireOtherText})`;
+    }
+    receiptHtml += `
+      <div class="receipt-item sub-item" style="color:#0284c7; font-weight:700;">
+        <span>↳ 指定タイヤ: ${escapeHtml(tireDescStr)}</span>
+        <span>タイヤ代金当日清算</span>
+      </div>
+    `;
+  }
+
   document.getElementById('reviewMenuList').innerHTML = receiptHtml;
   document.getElementById('reviewTotalPrice').textContent = `¥${total.toLocaleString()}～`;
 
@@ -1430,6 +1594,9 @@ function submitBooking() {
     },
     workName: work.name,
     oilName: oilName,
+    oilOtherText: AppState.selectedOilId === 'oil-other' ? AppState.selectedOilOtherText : '',
+    tireOption: work.id && work.id.includes('tire') ? (TIRE_OPTIONS_MASTER.find(t => t.id === AppState.selectedTireId) || {}).title : '',
+    tireOtherText: (work.id && work.id.includes('tire') && AppState.selectedTireId === 'tire-other') ? AppState.selectedTireOtherText : '',
     harleyDetails: harleyDetails,
     dctAdded: AppState.includeDctFilter,
     totalPrice: total,
@@ -2020,6 +2187,26 @@ function fillStoreEmailDetails(bookingId) {
     }
   }
 
+  // 6. Tire Details (if applicable)
+  if (booking.tireOption) {
+    const tireRow = document.createElement('tr');
+    let tireDescStr = escapeHtml(booking.tireOption);
+    if (booking.tireOtherText) {
+      tireDescStr += ` (${escapeHtml(booking.tireOtherText)})`;
+    }
+    tireRow.innerHTML = `
+      <td><span style="color:#0284c7; font-weight:700;">組み換えタイヤ指定</span></td>
+      <td>
+        <strong style="color:#0369a1;">${tireDescStr}</strong>
+        <div style="font-size:0.75rem; color:#475569;">
+          規定サイズ (F: ${escapeHtml(booking.bike.frontTire || '要確認')} / R: ${escapeHtml(booking.bike.rearTire || '要確認')}) ※本体代は当日店頭清算
+        </div>
+      </td>
+      <td style="text-align:right; font-weight:700;">当日店頭清算</td>
+    `;
+    tbody.appendChild(tireRow);
+  }
+
   document.getElementById('printTotalPrice').textContent = `¥${booking.totalPrice.toLocaleString()}～ (税込)`;
 }
 
@@ -2059,6 +2246,53 @@ function bindEventHandlers() {
   document.getElementById('brandLogo').addEventListener('click', () => {
     switchTab('user');
   });
+
+  // Agreement Button Handlers
+  const agreePreNoticeBtn = document.getElementById('agreePreNoticeBtn');
+  const reopenPreNoticeBtn = document.getElementById('reopenPreNoticeBtn');
+  const bookingPreNotice = document.getElementById('bookingPreNotice');
+  const preNoticeAgreedSummary = document.getElementById('preNoticeAgreedSummary');
+  const vehicleFilterFormWrapper = document.getElementById('vehicleFilterFormWrapper');
+
+  if (agreePreNoticeBtn) {
+    agreePreNoticeBtn.addEventListener('click', () => {
+      AppState.preNoticeAgreed = true;
+      if (bookingPreNotice) bookingPreNotice.classList.add('hidden');
+      if (preNoticeAgreedSummary) preNoticeAgreedSummary.classList.remove('hidden');
+      if (vehicleFilterFormWrapper) vehicleFilterFormWrapper.classList.remove('locked');
+      showToast('注意事項を確認・同意しました。車両をお選びください。', 'success');
+    });
+  }
+
+  if (reopenPreNoticeBtn) {
+    reopenPreNoticeBtn.addEventListener('click', () => {
+      if (bookingPreNotice) bookingPreNotice.classList.remove('hidden');
+      if (preNoticeAgreedSummary) preNoticeAgreedSummary.classList.add('hidden');
+    });
+  }
+
+  const agreeWorkWarningBtn = document.getElementById('agreeWorkWarningBtn');
+  const reopenWorkWarningBtn = document.getElementById('reopenWorkWarningBtn');
+  const workSelectionWarning = document.getElementById('workSelectionWarning');
+  const workWarningAgreedSummary = document.getElementById('workWarningAgreedSummary');
+  const pitWorkSectionWrapper = document.getElementById('pitWorkSectionWrapper');
+
+  if (agreeWorkWarningBtn) {
+    agreeWorkWarningBtn.addEventListener('click', () => {
+      AppState.workWarningAgreed = true;
+      if (workSelectionWarning) workSelectionWarning.classList.add('hidden');
+      if (workWarningAgreedSummary) workWarningAgreedSummary.classList.remove('hidden');
+      if (pitWorkSectionWrapper) pitWorkSectionWrapper.classList.remove('locked');
+      showToast('作業上の重要事項を確認・同意しました。作業内容をお選びください。', 'success');
+    });
+  }
+
+  if (reopenWorkWarningBtn) {
+    reopenWorkWarningBtn.addEventListener('click', () => {
+      if (workSelectionWarning) workSelectionWarning.classList.remove('hidden');
+      if (workWarningAgreedSummary) workWarningAgreedSummary.classList.add('hidden');
+    });
+  }
 
   // Step 1 to 2
   document.getElementById('toStep2Btn').addEventListener('click', () => {

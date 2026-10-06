@@ -112,9 +112,20 @@
                   </div>
                 </li>
               </ul>
+              <div class="notice-action-bar">
+                <button type="button" class="btn btn-warning btn-agree" id="agreePreNoticeBtn">
+                  ✓ 上記の注意事項を確認・同意して車両選択へ進む
+                </button>
+              </div>
             </div>
 
-            <div class="vehicle-filter-form">
+            <!-- Agreement Completed Banner (Appears after agreeing) -->
+            <div id="preNoticeAgreedSummary" class="notice-agreed-pill hidden">
+              <span>✅ ご予約前の注意事項に同意済み</span>
+              <button type="button" class="btn-text-reopen" id="reopenPreNoticeBtn">確認し直す</button>
+            </div>
+
+            <div class="vehicle-filter-form locked" id="vehicleFilterFormWrapper">
               <!-- 1. メーカー -->
               <div class="form-group">
                 <label for="filterMaker" class="form-label">
@@ -270,9 +281,20 @@
                   </div>
                 </li>
               </ul>
+              <div class="warning-action-bar">
+                <button type="button" class="btn btn-danger btn-agree" id="agreeWorkWarningBtn">
+                  ✓ 上記の重要事項・制約を確認・同意して作業を選択する
+                </button>
+              </div>
             </div>
 
-            <div class="pit-work-section">
+            <!-- Agreement Completed Banner for Step 2 -->
+            <div id="workWarningAgreedSummary" class="warning-agreed-pill hidden">
+              <span>✅ ピット作業に関する注意事項・制約に同意済み</span>
+              <button type="button" class="btn-text-reopen" id="reopenWorkWarningBtn">確認し直す</button>
+            </div>
+
+            <div class="pit-work-section locked" id="pitWorkSectionWrapper">
               <h3 class="section-subheading">🔧 PIT作業メニュー (いずれか1つを選択)</h3>
               <div class="pit-menu-list" id="pitWorkList">
                 <!-- Injected by JS:
@@ -308,7 +330,13 @@
                 <span class="sub-badge">オイル交換対象</span>
               </div>
               <div class="oil-cards-grid" id="oilCardsGrid">
-                <!-- 3 Engine Oil Choices or Harley Dedicated Engine Oil -->
+                <!-- 3 Engine Oil Choices or Harley Dedicated Engine Oil + その他 -->
+              </div>
+              <div id="oilOtherInputWrapper" class="form-group hidden" style="margin-top: 1rem; background: #fff7ed; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #fed7aa;">
+                <label for="oilOtherText" class="form-label font-strong" style="color: #9a3412;">
+                  希望するオイル銘柄・粘度等のご要望をご記入ください <span class="required">必須</span>
+                </label>
+                <input type="text" id="oilOtherText" class="form-control" placeholder="例: ワコーズ トリプルR 10W-40希望、店頭でスタッフと相談して決めたい、等">
               </div>
             </div>
 
@@ -345,6 +373,24 @@
                     <!-- Populated dynamically: HD Genuine Black/Chrome, Aftermarket Black/Chrome, Sundance, or Filter Set Black/Silver -->
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <!-- Tire Brand / Selection Section (Appears when any Tire Change work is chosen) -->
+            <div class="tire-selection-section hidden" id="tireSelectionSection">
+              <div class="tire-section-header">
+                <h3 class="section-subheading" id="tireSectionTitle">🛞 交換タイヤのご希望・銘柄選択</h3>
+                <span class="sub-badge" style="background:#e0f2fe; color:#0369a1;">タイヤ交換対象</span>
+              </div>
+              <p class="tire-section-desc">ピットで組み替えるタイヤのご希望をお選びください。規定サイズに合わせて店頭在庫・お取り寄せ手配いたします。</p>
+              <div class="tire-cards-grid" id="tireCardsGrid">
+                <!-- Dynamically populated by JS: Standard, High-Grip, Touring, その他 (店頭相談・指定) -->
+              </div>
+              <div id="tireOtherInputWrapper" class="form-group hidden" style="margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <label for="tireOtherText" class="form-label font-strong">
+                  希望するタイヤ銘柄・サイズ等のご要望をご記入ください <span class="required">必須</span>
+                </label>
+                <input type="text" id="tireOtherText" class="form-control" placeholder="例: ミシュラン ロード6希望、純正同等で一番持ちが良いもの、等">
               </div>
             </div>
 
