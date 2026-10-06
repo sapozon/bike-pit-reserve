@@ -421,6 +421,83 @@ body {
   }
 }
 
+/* Work Selection Warning Card (Step 2) */
+.work-warning-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #ef4444;
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed #fca5a5;
+}
+
+.warning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #991b1b;
+}
+
+.warning-sub {
+  font-size: 0.75rem;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.warning-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.warning-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.warning-icon {
+  font-size: 1.15rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.warning-list strong {
+  color: #991b1b;
+}
+
+@media (max-width: 600px) {
+  .work-warning-card {
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .warning-list li {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+}
+
 /* Vehicle Filter Form */
 .vehicle-filter-form {
   display: flex;
