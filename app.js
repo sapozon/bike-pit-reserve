@@ -112,33 +112,59 @@ const HARLEY_OILS_MASTER = {
     name: 'ハーレー専用エンジンオイル (TWP539006)',
     desc: 'ハーレーのエンジンオイルで迷ったら純正以外なら、これで決まり。Vツインの過酷な熱に対応。',
     price: 4000,
-    img: 'data/オイル/ハーレー用/image/TWP539006.jpg'
+    img: 'data/オイル/ハーレー用/image/TWP539006.jpg',
+    jan: '4580000020014'
   },
   primary: {
     name: 'ハーレー専用プライマリーオイル (TWP539018)',
     desc: 'プライマリーチェーンケースおよび湿式クラッチの保護・静粛性を高める専用フルード。',
     price: 4000,
-    img: 'data/オイル/ハーレー用/image/TWP539018-768x768.jpg'
+    img: 'data/オイル/ハーレー用/image/TWP539018-768x768.jpg',
+    jan: '4580000020021'
   },
   trans: {
     name: 'ハーレー専用トランスミッションオイル (TWP539024)',
     desc: 'ヘビーデューティなトランスミッションギヤを衝撃荷重から守る高粘度ギヤオイル。',
     price: 4000,
-    img: 'data/オイル/ハーレー用/image/TWP539024.jpg'
+    img: 'data/オイル/ハーレー用/image/TWP539024.jpg',
+    jan: '4580000020038'
   },
   sportsterPrimary: {
     name: 'スポーツスター専用ギヤ＆チェーンオイル (TWP539016)',
     desc: 'スポーツスター専用設計。プライマリーとトランスミッションを一体潤滑する専用オイル。',
     price: 4000,
-    img: 'data/オイル/ハーレー用/image/TWP539016-768x768.jpg'
+    img: 'data/オイル/ハーレー用/image/TWP539016-768x768.jpg',
+    jan: '4580000020045'
   }
 };
 
-const TIME_SLOTS_DEF = [
-  '09:30', '10:15', '11:00', '11:45',
-  '13:30', '14:15', '15:00', '15:45',
-  '16:30', '17:15', '18:00'
+// 30分刻みのピット作業時間スロット定義（10:00〜18:30）
+const DEFAULT_TIME_SLOTS = [
+  '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30',
+  '14:00', '14:30', '15:00', '15:30',
+  '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30'
 ];
+
+let TIME_SLOTS_DEF = [...DEFAULT_TIME_SLOTS];
+
+// 商品マスターとレジ用JANコードマッピング辞書
+const JAN_CATALOG = {
+  'oil-yamaha-rs': { jan: '4580000010015', name: 'ヤマハ ヤマルーブ RS4-GP' },
+  'oil-4trs': { jan: '4580000010022', name: 'MOTUL 4T-RS 100%化学合成油' },
+  'oil-castrol-p1': { jan: '4580000010039', name: 'カストロール POWER1 4T' },
+  'oil-other': { jan: '4580000010091', name: '店頭指定エンジンオイル' },
+  'harley-engine': { jan: '4580000020014', name: 'ハーレー専用エンジンオイル (TWP539006)' },
+  'harley-primary': { jan: '4580000020021', name: 'ハーレー専用プライマリーオイル (TWP539018)' },
+  'harley-trans': { jan: '4580000020038', name: 'ハーレー専用トランスミッションオイル (TWP539024)' },
+  'harley-sportster': { jan: '4580000020045', name: 'スポーツスター専用ギヤ＆チェーンオイル (TWP539016)' },
+  'dct-filter': { jan: '4580000030037', name: 'ホンダ純正DCTクラッチフィルター＆Oリング' },
+  'filter-std': { jan: '4580000030020', name: '車種適合オイルフィルター' },
+  'filter-hd-set-black': { jan: '4580000030044', name: 'ハーレー専用オイルフィルターセット【黒】' },
+  'filter-hd-set-silver': { jan: '4580000030051', name: 'ハーレー専用オイルフィルターセット【クローム銀】' },
+  'filter-hd-single': { jan: '4580000030068', name: 'ハーレー適合オイルフィルター(単品)' }
+};
 
 // --- Application State ---
 const AppState = {
@@ -155,6 +181,9 @@ const AppState = {
   // Step 2: Single PIT Work Selection
   selectedWorkId: 'oil-change',      // Default
   selectedWorkItem: null,
+
+  // Muffler Selection ('OEM' or 'AFTERMARKET')
+  mufflerType: 'OEM',
 
   // DCT Addon
   includeDctFilter: false,
@@ -182,6 +211,10 @@ const AppState = {
   selectedTimeSlot: null,            // 'HH:MM'
   calendarViewDate: new Date(),
 
+  // Admin Slot and Date Management (30分刻み)
+  adminActiveSlots: [...DEFAULT_TIME_SLOTS],
+  adminBlockedDates: [],
+
   // Admin Calendar
   adminCalViewDate: new Date(),
   adminCalSelectedDate: null,
@@ -192,17 +225,48 @@ const AppState = {
 };
 
 const STORAGE_KEY = 'pitreserve_bike_bookings_v4';
+const SLOT_CONFIG_KEY = 'pitreserve_slot_config_v4';
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+  loadSlotConfig();
   loadStoredReservations();
   initCalendarViewDate();
   initVehicleCascadeSelectors();
   renderCalendar();
   bindEventHandlers();
   updateStep2Price();
+  renderAdminSlotChips();
   updateAdminDashboard();
 });
+
+function loadSlotConfig() {
+  const saved = localStorage.getItem(SLOT_CONFIG_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed.activeSlots) && parsed.activeSlots.length > 0) {
+        AppState.adminActiveSlots = parsed.activeSlots;
+      }
+      if (Array.isArray(parsed.blockedDates)) {
+        AppState.adminBlockedDates = parsed.blockedDates;
+      }
+    } catch (e) {
+      console.warn('Failed to parse slot config', e);
+    }
+  }
+  TIME_SLOTS_DEF = [...AppState.adminActiveSlots];
+}
+
+function saveSlotConfig() {
+  localStorage.setItem(SLOT_CONFIG_KEY, JSON.stringify({
+    activeSlots: AppState.adminActiveSlots,
+    blockedDates: AppState.adminBlockedDates
+  }));
+  TIME_SLOTS_DEF = [...AppState.adminActiveSlots];
+  renderCalendar();
+  renderAdminCalendar();
+}
 
 // Load / Seed Data
 function loadStoredReservations() {
@@ -837,6 +901,7 @@ function renderHarleyFilterDropdown(bike) {
   const options = [];
 
   // If ALL oils are selected AND model has filter sets available:
+  // 「オイルエレメント交換でプライマリー、ミッションを追加した場合はフィルタはセットのみ表示」
   if (isAllOilsSelected && bike.hFilterSets && (bike.hFilterSets.setBlack || bike.hFilterSets.setSilver)) {
     AppState.harleyUseFilterSet = true;
     if (noticeBox) {
@@ -844,20 +909,20 @@ function renderHarleyFilterDropdown(bike) {
       noticeBox.innerHTML = `
         <span class="filter-set-notice-icon">✨</span>
         <div class="filter-set-notice-content">
-          <strong class="filter-set-notice-title">【全油脂類交換】フィルターセットが選択可能です</strong>
-          <span class="filter-set-notice-desc">エンジンオイル・プライマリー・ミッションの全てを同時交換されるため、ガスケット・Oリング同梱の「フィルターセット」を優先表示しています。単品フィルターもお選びいただけます。</span>
+          <strong class="filter-set-notice-title">【全オイル交換】フィルターセットのみ対象となります</strong>
+          <span class="filter-set-notice-desc">エンジンオイル・プライマリー・ミッション（スポーツスターはプライマリー）の全てを同時交換されるため、専用Oリング・ドレンワッシャー同梱の「フィルターセット」のみご指定いただけます。</span>
         </div>
       `;
     }
-    if (badgeSub) badgeSub.textContent = '全オイル交換：フィルターセット対応';
-    if (label) label.innerHTML = '使用するオイルフィルター（またはフィルターセット）をお選びください <span class="required">必須</span>';
+    if (badgeSub) badgeSub.textContent = '全オイル交換：フィルターセット限定表示';
+    if (label) label.innerHTML = '使用するフィルターセットをお選びください <span class="required">必須</span>';
 
-    // Add filter sets first
+    // Show ONLY filter sets
     if (bike.hFilterSets.setBlack) {
-      options.push({ val: `フィルターセット黒 (${bike.hFilterSets.setBlack})`, text: `★【推奨】フィルターセット【黒】 (品番: ${bike.hFilterSets.setBlack})` });
+      options.push({ val: `フィルターセット黒 (${bike.hFilterSets.setBlack})`, text: `★【必須】フィルターセット【黒】 (品番: ${bike.hFilterSets.setBlack})` });
     }
     if (bike.hFilterSets.setSilver) {
-      options.push({ val: `フィルターセット銀 (${bike.hFilterSets.setSilver})`, text: `★【推奨】フィルターセット【クローム銀】 (品番: ${bike.hFilterSets.setSilver})` });
+      options.push({ val: `フィルターセット銀 (${bike.hFilterSets.setSilver})`, text: `★【必須】フィルターセット【クローム銀】 (品番: ${bike.hFilterSets.setSilver})` });
     }
   } else {
     AppState.harleyUseFilterSet = false;
@@ -867,24 +932,24 @@ function renderHarleyFilterDropdown(bike) {
     }
     if (badgeSub) badgeSub.textContent = '適合品番から選択';
     if (label) label.innerHTML = '使用するオイルフィルターをお選びください <span class="required">必須</span>';
-  }
 
-  // Individual filter varieties (Single filters)
-  if (bike.hFilters) {
-    if (bike.hFilters.hdBlack) {
-      options.push({ val: `ハーレー純正黒 (${bike.hFilters.hdBlack})`, text: `ハーレー純正オイルフィルター【黒】 (品番: ${bike.hFilters.hdBlack})` });
-    }
-    if (bike.hFilters.hdSilver) {
-      options.push({ val: `ハーレー純正銀 (${bike.hFilters.hdSilver})`, text: `ハーレー純正オイルフィルター【クローム銀】 (品番: ${bike.hFilters.hdSilver})` });
-    }
-    if (bike.hFilters.afterBlack) {
-      options.push({ val: `社外品黒 (${bike.hFilters.afterBlack})`, text: `社外高品質オイルフィルター【黒】 (品番: ${bike.hFilters.afterBlack})` });
-    }
-    if (bike.hFilters.afterSilver) {
-      options.push({ val: `社外品銀 (${bike.hFilters.afterSilver})`, text: `社外高品質オイルフィルター【クローム銀】 (品番: ${bike.hFilters.afterSilver})` });
-    }
-    if (bike.hFilters.sundanceBlack) {
-      options.push({ val: `サンダンスオリジナル黒 (${bike.hFilters.sundanceBlack})`, text: `サンダンス オリジナルフィルター【黒】 (品番: ${bike.hFilters.sundanceBlack})` });
+    // Individual filter varieties (Single filters) only when NOT all oils selected
+    if (bike.hFilters) {
+      if (bike.hFilters.hdBlack) {
+        options.push({ val: `ハーレー純正黒 (${bike.hFilters.hdBlack})`, text: `ハーレー純正オイルフィルター【黒】 (品番: ${bike.hFilters.hdBlack})` });
+      }
+      if (bike.hFilters.hdSilver) {
+        options.push({ val: `ハーレー純正銀 (${bike.hFilters.hdSilver})`, text: `ハーレー純正オイルフィルター【クローム銀】 (品番: ${bike.hFilters.hdSilver})` });
+      }
+      if (bike.hFilters.afterBlack) {
+        options.push({ val: `社外品黒 (${bike.hFilters.afterBlack})`, text: `社外高品質オイルフィルター【黒】 (品番: ${bike.hFilters.afterBlack})` });
+      }
+      if (bike.hFilters.afterSilver) {
+        options.push({ val: `社外品銀 (${bike.hFilters.afterSilver})`, text: `社外高品質オイルフィルター【クローム銀】 (品番: ${bike.hFilters.afterSilver})` });
+      }
+      if (bike.hFilters.sundanceBlack) {
+        options.push({ val: `サンダンスオリジナル黒 (${bike.hFilters.sundanceBlack})`, text: `サンダンス オリジナルフィルター【黒】 (品番: ${bike.hFilters.sundanceBlack})` });
+      }
     }
   }
 
@@ -1125,7 +1190,8 @@ function renderCalendar() {
     const cellDate = new Date(viewYear, viewMonth, day);
     const dateStr = formatDateYMD(cellDate);
     
-    const isUnbookable = cellDate < tomorrow;
+    const isBlockedByAdmin = AppState.adminBlockedDates.includes(dateStr);
+    const isUnbookable = (cellDate < tomorrow) || isBlockedByAdmin;
     const isSelected = AppState.selectedDate === dateStr;
 
     const cell = document.createElement('div');
@@ -1144,7 +1210,11 @@ function renderCalendar() {
     let statusClass = 'dot-avail';
     let isFull = false;
 
-    if (bookedCount >= TIME_SLOTS_DEF.length) {
+    if (isBlockedByAdmin) {
+      statusText = '休';
+      statusClass = 'dot-full';
+      isFull = true;
+    } else if (TIME_SLOTS_DEF.length === 0 || bookedCount >= TIME_SLOTS_DEF.length) {
       statusText = '×';
       statusClass = 'dot-full';
       isFull = true;
@@ -1153,7 +1223,7 @@ function renderCalendar() {
       statusClass = 'dot-few';
     }
 
-    if (isUnbookable) {
+    if (cellDate < tomorrow && !isBlockedByAdmin) {
       statusText = '-';
     }
 
@@ -1436,6 +1506,16 @@ function prepareStep4Review() {
     `;
   }
 
+  // Muffler specification receipt note
+  const currentMuffler = (document.querySelector('input[name="mufflerType"]:checked') || {}).value || AppState.mufflerType;
+  const mufflerLabel = currentMuffler === 'AFTERMARKET' ? '社外マフラー (純正外・要脱着確認)' : '純正マフラー (ノーマル)';
+  receiptHtml += `
+    <div class="receipt-item sub-item" style="color:#475569; font-weight:600;">
+      <span>↳ マフラー仕様: ${escapeHtml(mufflerLabel)}</span>
+      <span>${currentMuffler === 'AFTERMARKET' ? '脱着要確認' : '標準'}</span>
+    </div>
+  `;
+
   document.getElementById('reviewMenuList').innerHTML = receiptHtml;
   document.getElementById('reviewTotalPrice').textContent = `¥${total.toLocaleString()}～`;
 
@@ -1485,12 +1565,16 @@ function submitBooking() {
     filterChoice: AppState.selectedHarleyFilterChoice
   } : null;
 
+  const mufflerTypeVal = (document.querySelector('input[name="mufflerType"]:checked') || {}).value || AppState.mufflerType;
+  AppState.mufflerType = mufflerTypeVal;
+
   const newBooking = {
     id: reservationId,
     createdAt: new Date().toISOString(),
     status: 'CONFIRMED',
     date: AppState.selectedDate,
     time: AppState.selectedTimeSlot,
+    mufflerType: mufflerTypeVal,
     bike: {
       maker: bike.m,
       disp: bike.d,
@@ -1535,13 +1619,23 @@ function submitBooking() {
 }
 
 function displaySuccessTicket(booking) {
-  document.getElementById('step4ReviewPanel').classList.add('hidden');
-  const successPanel = document.getElementById('step4SuccessPanel');
-  successPanel.classList.remove('hidden');
+  // Hide all view panels and show the separate bookingCompleteView screen
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+  const completeView = document.getElementById('bookingCompleteView');
+  if (completeView) {
+    completeView.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   document.getElementById('ticketReservationId').textContent = booking.id;
   document.getElementById('ticketDateTime').textContent = `${booking.date}  ${booking.time}〜`;
   document.getElementById('ticketCar').textContent = `${booking.bike.maker} ${booking.bike.name} (${booking.bike.cat || booking.bike.disp} / ${booking.bike.year ? booking.bike.year + '年' : ''})`;
+
+  const mufflerLabel = booking.mufflerType === 'AFTERMARKET' ? '社外マフラー(純正外)' : '純正マフラー';
+  const ticketMufflerEl = document.getElementById('ticketMuffler');
+  if (ticketMufflerEl) ticketMufflerEl.textContent = mufflerLabel;
 
   let workStr = booking.workName;
   if (booking.oilName) workStr += ` [${booking.oilName}]`;
@@ -1568,8 +1662,10 @@ function displaySuccessTicket(booking) {
 }
 
 function resetBookingFlow() {
-  document.getElementById('step4SuccessPanel').classList.add('hidden');
-  document.getElementById('step4ReviewPanel').classList.remove('hidden');
+  // Return to customer userReservationView
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('userReservationView').classList.add('active');
+  document.getElementById('navUserViewBtn').classList.add('active');
 
   document.getElementById('filterMaker').value = '';
   document.getElementById('filterDisp').innerHTML = '<option value="">先にメーカーを選択してください</option>';
@@ -1581,6 +1677,11 @@ function resetBookingFlow() {
   document.getElementById('filterModel').innerHTML = '<option value="">先に年式を選択してください</option>';
   document.getElementById('filterModel').disabled = true;
   hideBikePreview();
+
+  // Reset muffler
+  const oemRadio = document.querySelector('input[name="mufflerType"][value="OEM"]');
+  if (oemRadio) oemRadio.checked = true;
+  AppState.mufflerType = 'OEM';
 
   document.getElementById('custName').value = '';
   document.getElementById('custKana').value = '';
@@ -1981,14 +2082,19 @@ function fillStoreEmailDetails(bookingId) {
   // Schedule info
   document.getElementById('printDateTime').textContent = `${booking.date} ${booking.time}`;
   document.getElementById('printDuration').textContent = `約${booking.durationMin || 30}分`;
-  const statusBadge = document.getElementById('printStatusBadge');
-  statusBadge.className = `status-badge ${booking.status}`;
-  statusBadge.textContent = {
-    CONFIRMED: '予約確定',
-    IN_PROGRESS: '作業中',
-    COMPLETED: '作業完了',
-    CANCELLED: 'キャンセル'
-  }[booking.status] || booking.status;
+  
+  const workTitleEl = document.getElementById('printWorkTitle');
+  if (workTitleEl) workTitleEl.textContent = booking.workName;
+
+  const mufflerSpecEl = document.getElementById('printMufflerSpec');
+  if (mufflerSpecEl) {
+    const isAftermarket = booking.mufflerType === 'AFTERMARKET';
+    mufflerSpecEl.innerHTML = `
+      <span class="muffler-tag-pill ${isAftermarket ? 'aftermarket' : ''}">
+        ${isAftermarket ? '社外マフラー (純正外・要脱着確認)' : '純正マフラー (ノーマル仕様)'}
+      </span>
+    `;
+  }
 
   // Vehicle info
   document.getElementById('printBikeName').textContent = `${booking.bike.maker} ${booking.bike.name}`;
@@ -2008,11 +2114,36 @@ function fillStoreEmailDetails(bookingId) {
     imgContainer.innerHTML = '';
   }
 
-  // Work Details and Required Parts / Oils
+  // Work Details and Required Parts / Oils with JAN & Barcode representation
   const tbody = document.getElementById('printPartsTableBody');
   tbody.innerHTML = '';
 
   const isHarleyBike = isHarley(booking.bike);
+
+  // Helper to generate barcode SVG HTML
+  function generateBarcodeHtml(janCode) {
+    if (!janCode) return '<span style="color:#94a3b8; font-size:0.75rem;">(店頭発番/バーコード不要)</span>';
+    // Generate clean SVG bars for realistic visual scanner gun support
+    const bars = [];
+    const hashSeed = janCode.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const pattern = [2, 1, 3, 1, 2, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 3, 2, 1, 2, 1, 3, 1, 2];
+    let x = 4;
+    for (let i = 0; i < pattern.length; i++) {
+      const w = pattern[i];
+      if (i % 2 === 0) {
+        bars.push(`<rect x="${x}" y="2" width="${w}" height="22" fill="#0f172a" />`);
+      }
+      x += w + 1;
+    }
+    return `
+      <div class="barcode-box">
+        <svg class="barcode-svg" viewBox="0 0 ${x + 6} 26" xmlns="http://www.w3.org/2000/svg">
+          ${bars.join('')}
+        </svg>
+        <span class="barcode-jan-num">${escapeHtml(janCode)}</span>
+      </div>
+    `;
+  }
 
   // 1. Main PIT labor
   const mainRow = document.createElement('tr');
@@ -2022,6 +2153,7 @@ function fillStoreEmailDetails(bookingId) {
       <strong style="color:#0f172a;">${escapeHtml(booking.workName)}</strong>
       <div style="font-size:0.75rem; color:#64748b;">標準ピット作業 (${booking.durationMin || 30}分)</div>
     </td>
+    <td><span style="font-size:0.75rem; color:#64748b;">工賃POS登録済</span></td>
     <td style="text-align:right; font-weight:700;">¥${(booking.workPrice || 1100).toLocaleString()}～</td>
   `;
   tbody.appendChild(mainRow);
@@ -2029,6 +2161,14 @@ function fillStoreEmailDetails(bookingId) {
   // 2. Engine Oil (if applicable)
   if (booking.oilName) {
     const oilRow = document.createElement('tr');
+    let jan = JAN_CATALOG['oil-4trs'].jan;
+    if (isHarleyBike) {
+      jan = HARLEY_OILS_MASTER.engine.jan;
+    } else {
+      const match = Object.entries(JAN_CATALOG).find(([k, v]) => booking.oilName.includes(v.name) || (k === 'oil-yamaha-rs' && booking.oilName.includes('ヤマルーブ')));
+      if (match) jan = match[1].jan;
+    }
+
     oilRow.innerHTML = `
       <td><span style="color:#2563eb; font-weight:700;">使用エンジンオイル</span></td>
       <td>
@@ -2037,6 +2177,7 @@ function fillStoreEmailDetails(bookingId) {
           規定量: ${booking.bike.oil || '規定量'}${isHarleyBike ? ' (※ハーレー専用ボトル供給)' : ' (※店頭専用量り売り供給)'}
         </div>
       </td>
+      <td>${generateBarcodeHtml(jan)}</td>
       <td style="text-align:right; font-weight:700;">${booking.oilPrice ? `+¥${booking.oilPrice.toLocaleString()}～` : '工賃に含む'}</td>
     `;
     tbody.appendChild(oilRow);
@@ -2046,8 +2187,15 @@ function fillStoreEmailDetails(bookingId) {
   if (booking.workId === 'element-change' || (booking.workName && booking.workName.includes('エレメント'))) {
     const filterRow = document.createElement('tr');
     let filterPartText = '車種適合エンジンオイルフィルター（パッキン/Oリング含む）';
+    let filterJan = JAN_CATALOG['filter-std'].jan;
+
     if (booking.harleyDetails && booking.harleyDetails.filterChoice) {
       filterPartText = `【ハーレー指定品】${booking.harleyDetails.filterChoice}`;
+      if (booking.harleyDetails.filterChoice.includes('黒')) {
+        filterJan = booking.harleyDetails.useFilterSet ? JAN_CATALOG['filter-hd-set-black'].jan : JAN_CATALOG['filter-hd-single'].jan;
+      } else {
+        filterJan = booking.harleyDetails.useFilterSet ? JAN_CATALOG['filter-hd-set-silver'].jan : JAN_CATALOG['filter-hd-single'].jan;
+      }
     }
 
     filterRow.innerHTML = `
@@ -2056,6 +2204,7 @@ function fillStoreEmailDetails(bookingId) {
         <strong style="color:#b45309;">${escapeHtml(filterPartText)}</strong>
         <div style="font-size:0.75rem; color:#475569;">取付時Oリング部オイル塗布・規定トルク管理</div>
       </td>
+      <td>${generateBarcodeHtml(filterJan)}</td>
       <td style="text-align:right; font-weight:700;">作業内包</td>
     `;
     tbody.appendChild(filterRow);
@@ -2070,6 +2219,7 @@ function fillStoreEmailDetails(bookingId) {
         <strong style="color:#6d28d9;">ホンダ純正DCTクラッチフィルター ＆ Oリング</strong>
         <div style="font-size:0.75rem; color:#475569;">DCTクラッチカバー脱着・フィルター交換</div>
       </td>
+      <td>${generateBarcodeHtml(JAN_CATALOG['dct-filter'].jan)}</td>
       <td style="text-align:right; font-weight:700;">+¥1,650～</td>
     `;
     tbody.appendChild(dctRow);
@@ -2079,12 +2229,17 @@ function fillStoreEmailDetails(bookingId) {
   if (booking.harleyDetails) {
     if (booking.harleyDetails.primaryAdded) {
       const pRow = document.createElement('tr');
+      const isSport = isSportster(booking.bike);
+      const janP = isSport ? HARLEY_OILS_MASTER.sportsterPrimary.jan : HARLEY_OILS_MASTER.primary.jan;
+      const nameP = isSport ? HARLEY_OILS_MASTER.sportsterPrimary.name : HARLEY_OILS_MASTER.primary.name;
+
       pRow.innerHTML = `
         <td><span style="color:#c2410c; font-weight:700;">追加油脂 (プライマリ)</span></td>
         <td>
-          <strong style="color:#c2410c;">ハーレー専用プライマリーオイル (規定量: ${booking.bike.primaryOil || '要確認'})</strong>
+          <strong style="color:#c2410c;">${escapeHtml(nameP)} (規定量: ${booking.bike.primaryOil || '要確認'})</strong>
           <div style="font-size:0.75rem; color:#475569;">チェーンケースドレン＆インスペクションカバー点検</div>
         </td>
+        <td>${generateBarcodeHtml(janP)}</td>
         <td style="text-align:right; font-weight:700;">+¥4,000～</td>
       `;
       tbody.appendChild(pRow);
@@ -2094,9 +2249,10 @@ function fillStoreEmailDetails(bookingId) {
       tRow.innerHTML = `
         <td><span style="color:#c2410c; font-weight:700;">追加油脂 (ミッション)</span></td>
         <td>
-          <strong style="color:#c2410c;">ハーレー専用トランスミッションオイル (規定量: ${booking.bike.transOil || '要確認'})</strong>
+          <strong style="color:#c2410c;">${escapeHtml(HARLEY_OILS_MASTER.trans.name)} (規定量: ${booking.bike.transOil || '要確認'})</strong>
           <div style="font-size:0.75rem; color:#475569;">ギヤボックストランスミッションフルード交換</div>
         </td>
+        <td>${generateBarcodeHtml(HARLEY_OILS_MASTER.trans.jan)}</td>
         <td style="text-align:right; font-weight:700;">+¥4,000～</td>
       `;
       tbody.appendChild(tRow);
@@ -2118,6 +2274,7 @@ function fillStoreEmailDetails(bookingId) {
           規定サイズ (F: ${escapeHtml(booking.bike.frontTire || '要確認')} / R: ${escapeHtml(booking.bike.rearTire || '要確認')}) ※本体代は当日店頭清算
         </div>
       </td>
+      <td><span style="font-size:0.75rem; color:#64748b;">当日商品バーコード読取</span></td>
       <td style="text-align:right; font-weight:700;">当日店頭清算</td>
     `;
     tbody.appendChild(tireRow);
@@ -2379,11 +2536,125 @@ function bindEventHandlers() {
     document.getElementById('bookingDetailModal').classList.add('hidden');
   });
 
-  document.getElementById('bookingDetailModal').addEventListener('click', (e) => {
-    if (e.target.id === 'bookingDetailModal') {
-      document.getElementById('bookingDetailModal').classList.add('hidden');
-    }
+  // Admin Slot Management (30分刻み設定＆休業日)
+  bindAdminSlotManagementEvents();
+}
+
+// ============================================================================
+// ADMIN SLOT AND AVAILABILITY MANAGEMENT
+// ============================================================================
+function renderAdminSlotChips() {
+  const container = document.getElementById('adminSlotChipsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  DEFAULT_TIME_SLOTS.forEach(slotTime => {
+    const isSlotActive = AppState.adminActiveSlots.includes(slotTime);
+    const chip = document.createElement('div');
+    chip.className = `admin-slot-chip ${isSlotActive ? 'active' : 'disabled'}`;
+    chip.innerHTML = `
+      <span class="slot-chip-time">${slotTime}</span>
+      <span class="slot-status-text">${isSlotActive ? '受付中' : '停止中'}</span>
+    `;
+
+    chip.addEventListener('click', () => {
+      if (isSlotActive) {
+        AppState.adminActiveSlots = AppState.adminActiveSlots.filter(s => s !== slotTime);
+      } else {
+        AppState.adminActiveSlots.push(slotTime);
+        AppState.adminActiveSlots.sort();
+      }
+      saveSlotConfig();
+      renderAdminSlotChips();
+      showToast(`スロット【${slotTime}】を${isSlotActive ? '停止' : '受付可能'}に変更しました`, 'info');
+    });
+
+    container.appendChild(chip);
   });
+
+  renderAdminBlockedDatesList();
+}
+
+function renderAdminBlockedDatesList() {
+  const container = document.getElementById('adminBlockedDatesList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (AppState.adminBlockedDates.length === 0) {
+    container.innerHTML = '<span style="font-size:0.75rem; color:#94a3b8;">（現在設定中の休業・停止日はありません）</span>';
+    return;
+  }
+
+  AppState.adminBlockedDates.forEach(dateStr => {
+    const badge = document.createElement('div');
+    badge.className = 'admin-blocked-badge';
+    badge.innerHTML = `
+      <span>🚫 ${dateStr}</span>
+      <button type="button" class="btn-remove-date" title="解除">&times;</button>
+    `;
+    badge.querySelector('.btn-remove-date').addEventListener('click', () => {
+      AppState.adminBlockedDates = AppState.adminBlockedDates.filter(d => d !== dateStr);
+      saveSlotConfig();
+      renderAdminSlotChips();
+      showToast(`${dateStr} の受付停止を解除しました`, 'info');
+    });
+    container.appendChild(badge);
+  });
+}
+
+function bindAdminSlotManagementEvents() {
+  const enableAllBtn = document.getElementById('adminEnableAllSlotsBtn');
+  if (enableAllBtn) {
+    enableAllBtn.addEventListener('click', () => {
+      AppState.adminActiveSlots = [...DEFAULT_TIME_SLOTS];
+      saveSlotConfig();
+      renderAdminSlotChips();
+      showToast('全30分スロットを受付可能に設定しました', 'success');
+    });
+  }
+
+  const disableLunchBtn = document.getElementById('adminDisableLunchSlotsBtn');
+  if (disableLunchBtn) {
+    disableLunchBtn.addEventListener('click', () => {
+      AppState.adminActiveSlots = DEFAULT_TIME_SLOTS.filter(s => !s.startsWith('12:'));
+      saveSlotConfig();
+      renderAdminSlotChips();
+      showToast('12時台（昼休憩枠）の受付を停止しました', 'info');
+    });
+  }
+
+  const resetDefaultBtn = document.getElementById('adminResetSlotsDefaultBtn');
+  if (resetDefaultBtn) {
+    resetDefaultBtn.addEventListener('click', () => {
+      AppState.adminActiveSlots = [...DEFAULT_TIME_SLOTS];
+      AppState.adminBlockedDates = [];
+      saveSlotConfig();
+      renderAdminSlotChips();
+      showToast('受付時間帯を初期設定にリセットしました', 'success');
+    });
+  }
+
+  const addBlockBtn = document.getElementById('adminAddBlockedDateBtn');
+  const blockInput = document.getElementById('adminBlockDateInput');
+  if (addBlockBtn && blockInput) {
+    addBlockBtn.addEventListener('click', () => {
+      const dateVal = blockInput.value;
+      if (!dateVal) {
+        showToast('停止する日付を選択してください', 'error');
+        return;
+      }
+      if (AppState.adminBlockedDates.includes(dateVal)) {
+        showToast('すでに設定されている日付です', 'error');
+        return;
+      }
+      AppState.adminBlockedDates.push(dateVal);
+      AppState.adminBlockedDates.sort();
+      saveSlotConfig();
+      renderAdminSlotChips();
+      blockInput.value = '';
+      showToast(`${dateVal} を受付不可に設定しました`, 'success');
+    });
+  }
 }
 
 function showToast(message, type = 'info') {

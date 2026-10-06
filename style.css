@@ -2751,6 +2751,225 @@ body {
 }
 
 /* ==========================================================================
+   Muffler Selection Styles (Step 2)
+   ========================================================================== */
+.muffler-check-section {
+  margin: 1.25rem 0;
+}
+
+.muffler-check-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+}
+
+.muffler-check-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.35rem;
+}
+
+.muffler-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1e293b;
+  background: #e2e8f0;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.muffler-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+
+.muffler-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 540px) {
+  .muffler-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.muffler-option-label {
+  cursor: pointer;
+}
+
+.muffler-option-label input[type="radio"] {
+  display: none;
+}
+
+.muffler-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 0.9rem;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.muffler-option-label input[type="radio"]:checked + .muffler-card {
+  border-color: var(--primary-color);
+  background: #fff7ed;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.15);
+}
+
+.muffler-icon {
+  font-size: 1.5rem;
+}
+
+.muffler-info strong {
+  display: block;
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.muffler-info span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.muffler-tag-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  color: #1e293b;
+}
+
+.muffler-tag-pill.aftermarket {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+/* ==========================================================================
+   Dedicated Booking Complete View Screen
+   ========================================================================== */
+#bookingCompleteView {
+  padding: 1.5rem 0;
+}
+
+.complete-view-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.complete-top-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #059669;
+  background: #d1fae5;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.5rem;
+}
+
+/* ==========================================================================
+   Admin Slot Chips Configuration
+   ========================================================================== */
+.admin-slot-chip {
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: var(--transition);
+}
+
+.admin-slot-chip.active {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.admin-slot-chip.disabled {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.admin-slot-chip .slot-status-text {
+  font-size: 0.65rem;
+}
+
+.admin-blocked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.admin-blocked-badge .btn-remove-date {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+/* ==========================================================================
+   Store Email Barcode & JAN Representation
+   ========================================================================== */
+.barcode-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.barcode-svg {
+  height: 28px;
+  max-width: 140px;
+}
+
+.barcode-jan-num {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
    Strict A4 1-Page Print Stylesheet
    ========================================================================== */
 @media print {
@@ -2772,6 +2991,7 @@ body {
   .app-footer,
   .no-print,
   #userReservationView,
+  #bookingCompleteView,
   #adminDashboardView,
   .email-meta-header,
   .email-control-bar,

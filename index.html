@@ -280,6 +280,39 @@
               </div>
             </div>
 
+            <!-- Muffler specification check (各作業に追加: 純正マフラー or 純正外/社外マフラー) -->
+            <div class="muffler-check-section" id="mufflerCheckSection">
+              <div class="muffler-check-box">
+                <div class="muffler-check-header">
+                  <span class="muffler-badge">マフラー仕様の確認</span>
+                  <span class="required">必須</span>
+                </div>
+                <p class="muffler-desc">ドレンボルトやエレメント、リアタイヤの脱着可否・追加工賃確認のため、現在装着されているマフラーをお選びください。</p>
+                <div class="muffler-options-grid">
+                  <label class="muffler-option-label" id="mufflerOemLabel">
+                    <input type="radio" name="mufflerType" value="OEM" checked>
+                    <div class="muffler-card">
+                      <span class="muffler-icon">🛵</span>
+                      <div class="muffler-info">
+                        <strong>純正マフラー</strong>
+                        <span>ノーマル仕様（標準脱着対応）</span>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="muffler-option-label" id="mufflerAftermarketLabel">
+                    <input type="radio" name="mufflerType" value="AFTERMARKET">
+                    <div class="muffler-card">
+                      <span class="muffler-icon">🔧</span>
+                      <div class="muffler-info">
+                        <strong>社外マフラー (純正外)</strong>
+                        <span>カスタム・社外品（保安基準適合品）</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <!-- 外装（カウル・マフラー等）脱着に伴う追加費用のご承諾項目 -->
             <div class="cowl-agreement-card" id="cowlAgreementSection">
               <div class="cowl-agreement-header">
@@ -419,7 +452,7 @@
 
 
           <!-- ========================================================
-               STEP 4: CONFIRMATION & COMPLETION
+               STEP 4: CONFIRMATION
                ======================================================== -->
           <div class="form-step" id="step4">
             <!-- Review Mode -->
@@ -486,57 +519,68 @@
                 </button>
               </div>
             </div>
+          </div>
 
-            <!-- Complete Ticket Mode -->
-            <div id="step4SuccessPanel" class="success-panel hidden">
-              <div class="success-animation-icon">🎉</div>
-              <h2 class="success-title">ご予約が完了いたしました！</h2>
-              <p class="success-desc">ご登録のメールアドレス宛に予約完了控えをお送りいたしました。<br>当日ピットにて愛車と共にお待ちしております。</p>
+        </div>
+      </div>
+    </section>
 
-              <div class="ticket-card">
-                <div class="ticket-header">
-                  <span class="ticket-badge">BIKE PIT APPOINTMENT TICKET</span>
-                  <span class="ticket-id" id="ticketReservationId">RESERV-0000</span>
-                </div>
-                <div class="ticket-body">
-                  <div class="ticket-item">
-                    <span class="label">ご予約日時</span>
-                    <span class="val font-strong" id="ticketDateTime">--</span>
-                  </div>
-                  <div class="ticket-item">
-                    <span class="label">ご予約車両</span>
-                    <span class="val font-strong" id="ticketCar">--</span>
-                  </div>
-                  <div class="ticket-item">
-                    <span class="label">PIT作業内容</span>
-                    <span class="val" id="ticketWorkList">--</span>
-                  </div>
-                  <div class="ticket-item">
-                    <span class="label">規定オイル量</span>
-                    <span class="val" id="ticketOilAmount">--</span>
-                  </div>
-                  <div class="ticket-item">
-                    <span class="label">お名前</span>
-                    <span class="val" id="ticketCustName">--</span>
-                  </div>
-                  <div class="ticket-item">
-                    <span class="label">目安工賃合計</span>
-                    <span class="val highlight-price" id="ticketPrice">--</span>
-                  </div>
-                </div>
-                <div class="ticket-footer">
-                  <span>店舗: ２りんかん バイクピット</span>
-                  <span class="note">※受付にて本画面またはお名前・予約番号をお伝えください</span>
-                </div>
+    <!-- ========================================================
+         SEPARATE BOOKING COMPLETE VIEW (別画面：予約完了画面)
+         ======================================================== -->
+    <section id="bookingCompleteView" class="view-panel">
+      <div class="app-container">
+        <div class="complete-view-card">
+          <div class="success-animation-icon">🎉</div>
+          <span class="complete-top-badge">RESERVATION COMPLETED</span>
+          <h1 class="success-title">ご予約が完了いたしました！</h1>
+          <p class="success-desc">ご登録のメールアドレス宛に予約完了控えをお送りいたしました。<br>ご予約の日時に愛車と共にお越しください。</p>
+
+          <div class="ticket-card">
+            <div class="ticket-header">
+              <span class="ticket-badge">BIKE PIT APPOINTMENT TICKET</span>
+              <span class="ticket-id" id="ticketReservationId">RESERV-0000</span>
+            </div>
+            <div class="ticket-body">
+              <div class="ticket-item">
+                <span class="label">ご予約日時</span>
+                <span class="val font-strong" id="ticketDateTime">--</span>
               </div>
-
-              <div class="success-actions">
-                <button class="btn btn-outline" id="printTicketBtn">🖨️ 予約票を印刷 / 保存</button>
-                <button class="btn btn-primary" id="resetNewBookingBtn">＋ 新しい予約を行う</button>
+              <div class="ticket-item">
+                <span class="label">ご予約車両</span>
+                <span class="val font-strong" id="ticketCar">--</span>
               </div>
+              <div class="ticket-item">
+                <span class="label">マフラー仕様</span>
+                <span class="val" id="ticketMuffler">--</span>
+              </div>
+              <div class="ticket-item">
+                <span class="label">PIT作業内容</span>
+                <span class="val" id="ticketWorkList">--</span>
+              </div>
+              <div class="ticket-item">
+                <span class="label">規定オイル量</span>
+                <span class="val" id="ticketOilAmount">--</span>
+              </div>
+              <div class="ticket-item">
+                <span class="label">お名前</span>
+                <span class="val" id="ticketCustName">--</span>
+              </div>
+              <div class="ticket-item">
+                <span class="label">目安工賃合計</span>
+                <span class="val highlight-price" id="ticketPrice">--</span>
+              </div>
+            </div>
+            <div class="ticket-footer">
+              <span>店舗: ２りんかん バイクピット</span>
+              <span class="note">※受付にて本画面またはお名前・予約番号をお伝えください</span>
             </div>
           </div>
 
+          <div class="success-actions">
+            <button class="btn btn-outline" id="printTicketBtn">🖨️ 予約票を印刷 / 保存</button>
+            <button class="btn btn-primary" id="resetNewBookingBtn">＋ 続けて別の予約を行う</button>
+          </div>
         </div>
       </div>
     </section>
@@ -548,7 +592,7 @@
           <div>
             <div class="admin-badge">STORE MANAGEMENT</div>
             <h1 class="admin-heading">店舗管理画面（PIT予約管理）</h1>
-            <p class="admin-sub">予約一覧、作業ステータス変更、CSV出力が行えます。</p>
+            <p class="admin-sub">予約一覧、作業ステータス変更、CSV出力、予約受付枠（30分刻み）の設定が行えます。</p>
           </div>
           <div class="admin-quick-actions">
             <button class="btn btn-secondary btn-sm" id="adminSeedDataBtn">🔄 サンプル予約を追加</button>
@@ -584,6 +628,37 @@
             <div class="stat-info">
               <span class="stat-label">見込み工賃総額</span>
               <span class="stat-value" id="statEstimatedRevenue">¥0～</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Time Slot & Availability Configuration Card (管理画面：予約可能日・時間帯設定 30分刻み) -->
+        <div class="admin-slot-config-card" style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 style="font-size:1.05rem; font-weight:800; color:#0f172a;">⚙️ 予約可能時間帯・受付枠設定（30分刻み）</h3>
+              <p style="font-size:0.75rem; color:var(--text-muted);">店舗のピット受付可能時間帯（30分間隔）のON/OFFや、特定日の休業設定を行えます。</p>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="adminEnableAllSlotsBtn">全枠ON</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="adminDisableLunchSlotsBtn">昼休み(12時台)OFF</button>
+              <button type="button" class="btn btn-outline btn-sm" id="adminResetSlotsDefaultBtn">初期設定に戻す</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:0.8rem;">
+            <span style="font-size:0.8rem; font-weight:700; color:#334155;">■ 受付時間スロット（30分刻み / タップで有効・無効切替）:</span>
+            <div class="admin-slot-chips-grid" id="adminSlotChipsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px; margin-top:6px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:0.75rem; border-top:1px dashed #e2e8f0;">
+            <span style="font-size:0.8rem; font-weight:700; color:#334155;">■ 特定日の受付停止（臨時休業日など）:</span>
+            <input type="date" id="adminBlockDateInput" class="form-control" style="max-width:180px; font-size:0.85rem; padding:4px 8px;">
+            <button type="button" class="btn btn-danger btn-sm" id="adminAddBlockedDateBtn">🚫 この日を受付不可にする</button>
+            <div id="adminBlockedDatesList" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+              <!-- Blocked dates badges -->
             </div>
           </div>
         </div>
@@ -669,7 +744,7 @@
           <div>
             <div class="admin-badge" style="background:#e0e7ff; color:#3730a3;">STORE NOTIFICATION & DISPATCH</div>
             <h1 class="admin-heading">店舗メール画面（WEB予約受付通知・作業指示書）</h1>
-            <p class="admin-sub">お客様からの予約受信通知メールを再現。PIT現場用の<strong>A4用紙1枚印刷</strong>に対応しています。</p>
+            <p class="admin-sub">お客様からの予約受信通知メール。<strong>適合商品・JANコードバーコード付き</strong>で現場レジ清算にも対応。</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <select id="emailBookingSelector" class="form-control" style="max-width:280px; font-size:0.85rem; font-weight:700;">
@@ -732,12 +807,12 @@
               </div>
 
               <div class="dispatch-box">
-                <div class="dispatch-box-title">📅 ピット作業予定日時</div>
+                <div class="dispatch-box-title">📅 作業日・作業内容</div>
                 <table class="dispatch-table">
-                  <tr><th>ご来店日時</th><td><strong id="printDateTime" style="font-size:1.15rem; color:#c2410c;">--</strong></td></tr>
-                  <tr><th>作業予定ピット</th><td>２りんかん バイクピット #1</td></tr>
-                  <tr><th>想定作業時間</th><td id="printDuration">約30分</td></tr>
-                  <tr><th>ステータス</th><td><span id="printStatusBadge" class="status-badge CONFIRMED">予約確定</span></td></tr>
+                  <tr><th>ご来店作業日</th><td><strong id="printDateTime" style="font-size:1.15rem; color:#c2410c;">--</strong></td></tr>
+                  <tr><th>作業内容</th><td><strong id="printWorkTitle" style="color:#0f172a;">--</strong></td></tr>
+                  <tr><th>マフラー仕様</th><td id="printMufflerSpec"><span class="muffler-tag-pill">純正マフラー</span></td></tr>
+                  <tr><th>作業予定ピット</th><td>２りんかん バイクピット #1 (想定所要時間: <span id="printDuration">約30分</span>)</td></tr>
                 </table>
               </div>
             </div>
@@ -772,15 +847,16 @@
               </div>
             </div>
 
-            <!-- Work Details and Required Parts / Filters (Key Field for the Store) -->
+            <!-- Product Information with Barcode & JAN (商品情報：適合商品とレジ用JANコードバーコード) -->
             <div class="dispatch-box" style="margin-top:0.6rem;">
-              <div class="dispatch-box-title">🔧 作業内容 ＆ 使用部品・指定油脂（現場準備用）</div>
+              <div class="dispatch-box-title">📦 商品情報（適合商品 ＆ レジ用JANバーコード）</div>
               <table class="dispatch-table parts-table">
                 <thead>
                   <tr style="background:#f8fafc;">
-                    <th style="width:25%;">区分</th>
-                    <th style="width:50%;">作業内容 / 使用部品・オイル指定</th>
-                    <th style="width:25%; text-align:right;">参考工賃(税込)</th>
+                    <th style="width:20%;">区分</th>
+                    <th style="width:40%;">適合商品名 / 仕様・指定</th>
+                    <th style="width:25%;">レジ用JANバーコード</th>
+                    <th style="width:15%; text-align:right;">参考工賃(税込)</th>
                   </tr>
                 </thead>
                 <tbody id="printPartsTableBody">
@@ -788,38 +864,15 @@
                 </tbody>
                 <tfoot>
                   <tr style="background:#fff7ed; font-weight:800;">
-                    <td colspan="2" style="text-align:right;">お見積り合計予定工賃（税込）:</td>
+                    <td colspan="3" style="text-align:right;">お見積り合計予定工賃（税込）:</td>
                     <td style="text-align:right; font-size:1.1rem; color:#c2410c;" id="printTotalPrice">¥0～</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
 
-            <!-- Mechanic Checklist & Store Sign-off Area -->
-            <div class="dispatch-check-area">
-              <div class="check-col">
-                <span class="check-title">【現場ピット点検チェック項目】</span>
-                <div class="check-list">
-                  <span>□ ドレンボルト規定トルク締付・新品ワッシャー交換</span>
-                  <span>□ オイル規定量ゲージ確認（暖機後再確認）</span>
-                  <span>□ オイル漏れ・滲み確認（フィルター・ドレン周り）</span>
-                  <span>□ 前後空気圧・ホイール締め付けトルク確認</span>
-                </div>
-              </div>
-              <div class="sign-col">
-                <div class="sign-box">
-                  <span class="sign-title">ピット作業担当者</span>
-                  <div class="sign-space">印</div>
-                </div>
-                <div class="sign-box">
-                  <span class="sign-title">受領・ダブルチェック</span>
-                  <div class="sign-space">印</div>
-                </div>
-              </div>
-            </div>
-
             <div class="dispatch-footer">
-              <span>２りんかん ピットサービス課 / 本用紙は店頭受付後、作業完了までカルテとして保管してください。</span>
+              <span>２りんかん ピットサービス課 / レジ精算時は上記JANバーコードをスキャナーでお読み取りいただけます。</span>
             </div>
           </div>
         </div>
