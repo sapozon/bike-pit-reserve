@@ -550,7 +550,7 @@ function getDynamicPitWorkItems(bike) {
       name: 'エンジンオイル交換',
       desc: isHarley(bike) ? 'ハーレー専用オイルまたは推奨オイルでのピット交換。' : '愛車のエンジン特性に合わせた高品質オイル交換。',
       price: 1100,
-      durationMin: 25,
+      durationMin: 30,
       isOilChange: true
     },
     {
@@ -558,7 +558,7 @@ function getDynamicPitWorkItems(bike) {
       name: 'オイルエレメント交換',
       desc: isHarley(bike) ? 'ハーレー適合オイルフィルターの交換作業。' : 'エンジン内部のスラッジ・鉄粉を濾過するフィルターを新品に交換。',
       price: 1980,
-      durationMin: 20,
+      durationMin: 60,
       isElementChange: true
     }
   ];
@@ -572,21 +572,21 @@ function getDynamicPitWorkItems(bike) {
         name: 'フロントタイヤ交換（スクーター125cc以下）',
         desc: 'フロントホイール脱着・新品タイヤ組み換え・エア調整。',
         price: 4000,
-        durationMin: 35
+        durationMin: 60
       },
       {
         id: 'rear-tire-scooter125',
         name: 'リヤタイヤ交換（スクーター125cc以下）',
         desc: 'マフラー等脱着・リヤタイヤ組み換え・エア調整。',
         price: 5000,
-        durationMin: 45
+        durationMin: 60
       },
       {
         id: 'both-tire-scooter125',
         name: 'フロント＋リヤタイヤ交換（スクーター125cc以下）',
         desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 8500,
-        durationMin: 70
+        durationMin: 120
       }
     );
   } else if (scooterVal === 'スクーター126') {
@@ -596,21 +596,21 @@ function getDynamicPitWorkItems(bike) {
         name: 'フロントタイヤ交換（スクーター126cc以上）',
         desc: 'フロントホイール脱着・新品タイヤ組み換え・エア調整。',
         price: 4400,
-        durationMin: 35
+        durationMin: 60
       },
       {
         id: 'rear-tire-scooter126',
         name: 'リヤタイヤ交換（スクーター126cc以上）',
         desc: 'マフラー脱着・リヤタイヤ組み換え・エア調整。',
         price: 5500,
-        durationMin: 45
+        durationMin: 60
       },
       {
         id: 'both-tire-scooter126',
         name: 'フロント＋リヤタイヤ交換（スクーター126cc以上）',
         desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 9500,
-        durationMin: 70
+        durationMin: 120
       }
     );
   } else {
@@ -620,21 +620,21 @@ function getDynamicPitWorkItems(bike) {
         name: 'フロントタイヤ交換',
         desc: 'フロントホイール脱着・新品タイヤ組み換え・バランス調整。',
         price: 4400,
-        durationMin: 35
+        durationMin: 60
       },
       {
         id: 'rear-tire-std',
         name: 'リヤタイヤ交換',
         desc: 'リヤホイール脱着・新品タイヤ組み換え・チェーン調整。',
         price: 5500,
-        durationMin: 45
+        durationMin: 60
       },
       {
         id: 'both-tire-std',
         name: 'フロント＋リヤタイヤ交換',
         desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 9500,
-        durationMin: 70
+        durationMin: 120
       }
     );
   }
@@ -2247,56 +2247,57 @@ function bindEventHandlers() {
     switchTab('user');
   });
 
-  // Agreement Button Handlers
-  const agreePreNoticeBtn = document.getElementById('agreePreNoticeBtn');
+  // Agreement Pop-up Modal Handlers
+  const preNoticeModal = document.getElementById('preNoticeModal');
+  const agreePreNoticeModalBtn = document.getElementById('agreePreNoticeModalBtn');
   const reopenPreNoticeBtn = document.getElementById('reopenPreNoticeBtn');
-  const bookingPreNotice = document.getElementById('bookingPreNotice');
-  const preNoticeAgreedSummary = document.getElementById('preNoticeAgreedSummary');
-  const vehicleFilterFormWrapper = document.getElementById('vehicleFilterFormWrapper');
 
-  if (agreePreNoticeBtn) {
-    agreePreNoticeBtn.addEventListener('click', () => {
+  if (agreePreNoticeModalBtn) {
+    agreePreNoticeModalBtn.addEventListener('click', () => {
       AppState.preNoticeAgreed = true;
-      if (bookingPreNotice) bookingPreNotice.classList.add('hidden');
-      if (preNoticeAgreedSummary) preNoticeAgreedSummary.classList.remove('hidden');
-      if (vehicleFilterFormWrapper) vehicleFilterFormWrapper.classList.remove('locked');
-      showToast('注意事項を確認・同意しました。車両をお選びください。', 'success');
+      if (preNoticeModal) preNoticeModal.classList.add('hidden');
+      showToast('ご予約前の注意事項に同意しました', 'success');
     });
   }
 
   if (reopenPreNoticeBtn) {
     reopenPreNoticeBtn.addEventListener('click', () => {
-      if (bookingPreNotice) bookingPreNotice.classList.remove('hidden');
-      if (preNoticeAgreedSummary) preNoticeAgreedSummary.classList.add('hidden');
+      if (preNoticeModal) preNoticeModal.classList.remove('hidden');
     });
   }
 
-  const agreeWorkWarningBtn = document.getElementById('agreeWorkWarningBtn');
+  const workWarningModal = document.getElementById('workWarningModal');
+  const agreeWorkWarningModalBtn = document.getElementById('agreeWorkWarningModalBtn');
   const reopenWorkWarningBtn = document.getElementById('reopenWorkWarningBtn');
-  const workSelectionWarning = document.getElementById('workSelectionWarning');
-  const workWarningAgreedSummary = document.getElementById('workWarningAgreedSummary');
-  const pitWorkSectionWrapper = document.getElementById('pitWorkSectionWrapper');
 
-  if (agreeWorkWarningBtn) {
-    agreeWorkWarningBtn.addEventListener('click', () => {
+  if (agreeWorkWarningModalBtn) {
+    agreeWorkWarningModalBtn.addEventListener('click', () => {
       AppState.workWarningAgreed = true;
-      if (workSelectionWarning) workSelectionWarning.classList.add('hidden');
-      if (workWarningAgreedSummary) workWarningAgreedSummary.classList.remove('hidden');
-      if (pitWorkSectionWrapper) pitWorkSectionWrapper.classList.remove('locked');
-      showToast('作業上の重要事項を確認・同意しました。作業内容をお選びください。', 'success');
+      if (workWarningModal) workWarningModal.classList.add('hidden');
+      showToast('ピット作業の重要事項・制約に同意しました', 'success');
     });
   }
 
   if (reopenWorkWarningBtn) {
     reopenWorkWarningBtn.addEventListener('click', () => {
-      if (workSelectionWarning) workSelectionWarning.classList.remove('hidden');
-      if (workWarningAgreedSummary) workWarningAgreedSummary.classList.add('hidden');
+      if (workWarningModal) workWarningModal.classList.remove('hidden');
     });
   }
+
+  // Show Pre-Notice Modal immediately on page load if not yet agreed
+  setTimeout(() => {
+    if (!AppState.preNoticeAgreed && preNoticeModal) {
+      preNoticeModal.classList.remove('hidden');
+    }
+  }, 200);
 
   // Step 1 to 2
   document.getElementById('toStep2Btn').addEventListener('click', () => {
     goToStep(2);
+    // Show Work Warning Modal on entering Step 2 if not yet agreed
+    if (!AppState.workWarningAgreed && workWarningModal) {
+      workWarningModal.classList.remove('hidden');
+    }
   });
 
   // Step 2 to 1 and to 3
@@ -2304,7 +2305,26 @@ function bindEventHandlers() {
     goToStep(1);
   });
 
-  document.getElementById('toStep3Btn').addEventListener('click', () => {
+  // Cowl Agreement Checkbox validation for Step 2 -> Step 3
+  const cowlAgreementCheckbox = document.getElementById('cowlAgreementCheckbox');
+  const toStep3Btn = document.getElementById('toStep3Btn');
+
+  function checkStep2NextEligibility() {
+    if (!toStep3Btn) return;
+    const isCowlAgreed = cowlAgreementCheckbox ? cowlAgreementCheckbox.checked : true;
+    toStep3Btn.disabled = !isCowlAgreed;
+  }
+
+  if (cowlAgreementCheckbox) {
+    cowlAgreementCheckbox.addEventListener('change', checkStep2NextEligibility);
+  }
+
+  toStep3Btn.addEventListener('click', () => {
+    if (cowlAgreementCheckbox && !cowlAgreementCheckbox.checked) {
+      showToast('外装脱着等に伴う追加費用のご承諾にチェックを入れてください', 'error');
+      cowlAgreementCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     goToStep(3);
   });
 

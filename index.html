@@ -82,50 +82,13 @@
               <p class="step-subtitle">メーカーから順に絞り込んでください。規定オイル量やタイヤサイズが自動連携されます。</p>
             </div>
 
-            <!-- ご予約前の重要注意事項バナー -->
-            <div class="booking-notice-card" id="bookingPreNotice">
-              <div class="notice-header">
-                <span class="notice-badge">⚠️ ご予約前の注意事項</span>
-                <span class="notice-sub">WEB予約をご利用いただく前に必ずご確認ください</span>
-              </div>
-              <ul class="notice-list">
-                <li>
-                  <span class="notice-icon">🏍️</span>
-                  <div>
-                    <strong>対象車両について</strong><br>
-                    当WEB予約では<strong>「国産車」および「一部外国車（ハーレー・BMW等）」</strong>のPIT作業を受付しております。
-                  </div>
-                </li>
-                <li>
-                  <span class="notice-icon">🔍</span>
-                  <div>
-                    <strong>適合確認および在庫状況によるキャンセルについて</strong><br>
-                    適合確認の取れない商品・特殊車両のご予約は承ることができません。<br>
-                    また、<strong>店頭にご希望のオイル・エレメント・タイヤ等の在庫がない場合や適合外の場合は、店舗側よりご連絡の上、ご予約をキャンセル</strong>させていただく場合がございます。あらかじめご了承ください。
-                  </div>
-                </li>
-                <li>
-                  <span class="notice-icon">📞</span>
-                  <div>
-                    <strong>リストにない車両の整備をご希望の場合</strong><br>
-                    選択肢（メーカー・車種・年式等）に掲載のない車両の整備・PIT作業をご希望のお客様は、<strong>ご利用店舗へ直接お電話にてご相談・お問い合わせ</strong>ください。
-                  </div>
-                </li>
-              </ul>
-              <div class="notice-action-bar">
-                <button type="button" class="btn btn-warning btn-agree" id="agreePreNoticeBtn">
-                  ✓ 上記の注意事項を確認・同意して車両選択へ進む
-                </button>
-              </div>
+            <!-- Agreement Completed Banner (Can re-open popup modal) -->
+            <div id="preNoticeAgreedSummary" class="notice-agreed-pill">
+              <span>✅ ご予約前の注意事項に同意済み（国産車・一部外車・適合確認）</span>
+              <button type="button" class="btn-text-reopen" id="reopenPreNoticeBtn">注意事項を再確認</button>
             </div>
 
-            <!-- Agreement Completed Banner (Appears after agreeing) -->
-            <div id="preNoticeAgreedSummary" class="notice-agreed-pill hidden">
-              <span>✅ ご予約前の注意事項に同意済み</span>
-              <button type="button" class="btn-text-reopen" id="reopenPreNoticeBtn">確認し直す</button>
-            </div>
-
-            <div class="vehicle-filter-form locked" id="vehicleFilterFormWrapper">
+            <div class="vehicle-filter-form" id="vehicleFilterFormWrapper">
               <!-- 1. メーカー -->
               <div class="form-group">
                 <label for="filterMaker" class="form-label">
@@ -237,64 +200,13 @@
               <!-- Injected by JS -->
             </div>
 
-            <!-- 作業選択時の重要警告バナー -->
-            <div class="work-warning-card" id="workSelectionWarning">
-              <div class="warning-header">
-                <span class="warning-badge">⚠️ ピット作業に関する重要なお知らせ・注意事項</span>
-                <span class="warning-sub">受付前に必ずご確認・ご承諾をお願いいたします</span>
-              </div>
-              <ul class="warning-list">
-                <li>
-                  <span class="warning-icon">🛑</span>
-                  <div>
-                    <strong>適合品・店頭在庫およびお取り寄せについて</strong><br>
-                    適合するオイル・フィルター・タイヤ等の在庫がない場合は、当日の作業を実施できません。<br>
-                    部品のお取り寄せ手配を行い、<strong>後日改めてのご入庫・作業となる場合</strong>がございます。
-                  </div>
-                </li>
-                <li>
-                  <span class="warning-icon">⚙️</span>
-                  <div>
-                    <strong>ピット専用設備・特殊工具を要する作業について</strong><br>
-                    車両の整備・分解に必要な専用設備や特殊工具が店舗にない場合、作業をお受けできない場合がございます。
-                  </div>
-                </li>
-                <li>
-                  <span class="warning-icon">⚠️</span>
-                  <div>
-                    <strong>車両の状態による受付不可・お断り</strong><br>
-                    ボルトの固着・ネジ山破損・著しい経年劣化・フレームや足回りの異常など、<strong>車両の状態によっては作業をお断りさせていただく場合</strong>がございます。
-                  </div>
-                </li>
-                <li>
-                  <span class="warning-icon">🚫</span>
-                  <div>
-                    <strong>不正改造車のご入庫・作業は一切お断りいたします</strong><br>
-                    保安基準に適合しないマフラーや灯火類、基準外ローダウン、フレーム加工などの<strong>不正改造車（違法改造車）のピット入庫および作業は固くお断り</strong>いたします。
-                  </div>
-                </li>
-                <li>
-                  <span class="warning-icon">📞</span>
-                  <div>
-                    <strong>メニューにない作業・当日追加作業のご希望について</strong><br>
-                    ピット作業枠（時間）には限りがございます。<strong>WEBメニューにない作業や、当日追加で作業をご希望される場合は、WEB予約ではなく必ず店舗へ直接お電話</strong>にてご予約・ご相談ください。
-                  </div>
-                </li>
-              </ul>
-              <div class="warning-action-bar">
-                <button type="button" class="btn btn-danger btn-agree" id="agreeWorkWarningBtn">
-                  ✓ 上記の重要事項・制約を確認・同意して作業を選択する
-                </button>
-              </div>
-            </div>
-
-            <!-- Agreement Completed Banner for Step 2 -->
-            <div id="workWarningAgreedSummary" class="warning-agreed-pill hidden">
+            <!-- Agreement Completed Banner for Step 2 (Can re-open popup modal) -->
+            <div id="workWarningAgreedSummary" class="warning-agreed-pill">
               <span>✅ ピット作業に関する注意事項・制約に同意済み</span>
-              <button type="button" class="btn-text-reopen" id="reopenWorkWarningBtn">確認し直す</button>
+              <button type="button" class="btn-text-reopen" id="reopenWorkWarningBtn">注意事項を再確認</button>
             </div>
 
-            <div class="pit-work-section locked" id="pitWorkSectionWrapper">
+            <div class="pit-work-section" id="pitWorkSectionWrapper">
               <h3 class="section-subheading">🔧 PIT作業メニュー (いずれか1つを選択)</h3>
               <div class="pit-menu-list" id="pitWorkList">
                 <!-- Injected by JS:
@@ -392,6 +304,24 @@
                 </label>
                 <input type="text" id="tireOtherText" class="form-control" placeholder="例: ミシュラン ロード6希望、純正同等で一番持ちが良いもの、等">
               </div>
+            </div>
+
+            <!-- 外装（カウル・マフラー等）脱着に伴う追加費用のご承諾項目 -->
+            <div class="cowl-agreement-card" id="cowlAgreementSection">
+              <div class="cowl-agreement-header">
+                <span class="cowl-icon">⚠️</span>
+                <strong class="cowl-title">【重要】外装脱着等に伴う追加費用についてのご確認</strong>
+              </div>
+              <p class="cowl-desc">
+                フルカウル車、ビッグスクーター、カスタム車両等、<strong>車両の構造・状態によってカウルやマフラー等の外装脱着が必要となる場合、別途追加工賃（￥1,100～）が発生</strong>することがございます。店頭での車両確認の上ご案内いたします。
+              </p>
+              <label class="custom-checkbox cowl-checkbox-label">
+                <input type="checkbox" id="cowlAgreementCheckbox">
+                <span class="checkmark"></span>
+                <span class="cowl-checkbox-text">
+                  <strong>外装（カウル・マフラー等）の脱着が必要な場合、追加費用が発生することを承諾します</strong>
+                </span>
+              </label>
             </div>
 
             <div class="card-footer space-between">
@@ -937,6 +867,104 @@
         <div class="modal-status-actions" id="modalStatusActions">
           <!-- Status buttons -->
         </div>
+      </div>
+    </div>
+  <!-- 1. 前面表示ポップアップ：ご予約前の注意事項モーダル (STEP 1) -->
+  <div class="modal-backdrop hidden" id="preNoticeModal">
+    <div class="modal-card modal-card-notice">
+      <div class="modal-header header-amber">
+        <h3 class="modal-title">⚠️ ご予約前の重要注意事項</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead-text">WEB予約をご利用いただく前に、以下の内容をご確認・ご承諾ください。</p>
+        <div class="modal-notice-box">
+          <ul class="notice-list">
+            <li>
+              <span class="notice-icon">🏍️</span>
+              <div>
+                <strong>対象車両について</strong><br>
+                当WEB予約では<strong>「国産車」および「一部外国車（ハーレー・BMW等）」</strong>のPIT作業を受付しております。
+              </div>
+            </li>
+            <li>
+              <span class="notice-icon">🔍</span>
+              <div>
+                <strong>適合確認および在庫状況によるキャンセルについて</strong><br>
+                適合確認の取れない商品・特殊車両のご予約は承ることができません。<br>
+                また、<strong>店頭にご希望のオイル・エレメント・タイヤ等の在庫がない場合や適合外の場合は、店舗側よりご連絡の上、ご予約をキャンセル</strong>させていただく場合がございます。あらかじめご了承ください。
+              </div>
+            </li>
+            <li>
+              <span class="notice-icon">📞</span>
+              <div>
+                <strong>リストにない車両の整備をご希望の場合</strong><br>
+                選択肢（メーカー・車種・年式等）に掲載のない車両の整備・PIT作業をご希望のお客様は、<strong>ご利用店舗へ直接お電話にてご相談・お問い合わせ</strong>ください。
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer footer-center">
+        <button type="button" class="btn btn-warning btn-agree btn-modal-agree" id="agreePreNoticeModalBtn">
+          ✓ 注意事項に同意して車両を選択する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 前面表示ポップアップ：ピット作業に関する重要警告モーダル (STEP 2) -->
+  <div class="modal-backdrop hidden" id="workWarningModal">
+    <div class="modal-card modal-card-notice">
+      <div class="modal-header header-red">
+        <h3 class="modal-title">🛑 ピット作業に関する重要なお知らせ・制約事項</h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-lead-text">作業メニューをご選択いただく前に、以下の重要事項をご確認・ご承諾ください。</p>
+        <div class="modal-warning-box">
+          <ul class="warning-list">
+            <li>
+              <span class="warning-icon">🛑</span>
+              <div>
+                <strong>適合品・店頭在庫およびお取り寄せについて</strong><br>
+                適合するオイル・フィルター・タイヤ等の在庫がない場合は、当日の作業を実施できません。<br>
+                部品のお取り寄せ手配を行い、<strong>後日改めてのご入庫・作業となる場合</strong>がございます。
+              </div>
+            </li>
+            <li>
+              <span class="warning-icon">⚙️</span>
+              <div>
+                <strong>ピット専用設備・特殊工具を要する作業について</strong><br>
+                車両の整備・分解に必要な専用設備や特殊工具が店舗にない場合、作業をお受けできない場合がございます。
+              </div>
+            </li>
+            <li>
+              <span class="warning-icon">⚠️</span>
+              <div>
+                <strong>車両の状態による受付不可・お断り</strong><br>
+                ボルトの固着・ネジ山破損・著しい経年劣化・フレームや足回りの異常など、<strong>車両の状態によっては作業をお断りさせていただく場合</strong>がございます。
+              </div>
+            </li>
+            <li>
+              <span class="warning-icon">🚫</span>
+              <div>
+                <strong>不正改造車のご入庫・作業は一切お断りいたします</strong><br>
+                保安基準に適合しないマフラーや灯火類、基準外ローダウン、フレーム加工などの<strong>不正改造車（違法改造車）のピット入庫および作業は固くお断り</strong>いたします。
+              </div>
+            </li>
+            <li>
+              <span class="warning-icon">📞</span>
+              <div>
+                <strong>メニューにない作業・当日追加作業のご希望について</strong><br>
+                ピット作業枠（時間）には限りがございます。<strong>WEBメニューにない作業や、当日追加で作業をご希望される場合は、WEB予約ではなく必ず店舗へ直接お電話</strong>にてご予約・ご相談ください。
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer footer-center">
+        <button type="button" class="btn btn-danger btn-agree btn-modal-agree" id="agreeWorkWarningModalBtn">
+          ✓ 上記の制約・重要事項に同意して作業を選択する
+        </button>
       </div>
     </div>
   </div>
