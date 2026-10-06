@@ -548,7 +548,6 @@ function getDynamicPitWorkItems(bike) {
     {
       id: 'oil-change',
       name: 'エンジンオイル交換',
-      desc: isHarley(bike) ? 'ハーレー専用オイルまたは推奨オイルでのピット交換。' : '愛車のエンジン特性に合わせた高品質オイル交換。',
       price: 1100,
       durationMin: 30,
       isOilChange: true
@@ -556,7 +555,6 @@ function getDynamicPitWorkItems(bike) {
     {
       id: 'element-change',
       name: 'オイルエレメント交換',
-      desc: isHarley(bike) ? 'ハーレー適合オイルフィルターの交換作業。' : 'エンジン内部のスラッジ・鉄粉を濾過するフィルターを新品に交換。',
       price: 1980,
       durationMin: 60,
       isElementChange: true
@@ -570,21 +568,18 @@ function getDynamicPitWorkItems(bike) {
       {
         id: 'front-tire-scooter125',
         name: 'フロントタイヤ交換（スクーター125cc以下）',
-        desc: 'フロントホイール脱着・新品タイヤ組み換え・エア調整。',
         price: 4000,
         durationMin: 60
       },
       {
         id: 'rear-tire-scooter125',
         name: 'リヤタイヤ交換（スクーター125cc以下）',
-        desc: 'マフラー等脱着・リヤタイヤ組み換え・エア調整。',
         price: 5000,
         durationMin: 60
       },
       {
         id: 'both-tire-scooter125',
         name: 'フロント＋リヤタイヤ交換（スクーター125cc以下）',
-        desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 8500,
         durationMin: 120
       }
@@ -594,21 +589,18 @@ function getDynamicPitWorkItems(bike) {
       {
         id: 'front-tire-scooter126',
         name: 'フロントタイヤ交換（スクーター126cc以上）',
-        desc: 'フロントホイール脱着・新品タイヤ組み換え・エア調整。',
         price: 4400,
         durationMin: 60
       },
       {
         id: 'rear-tire-scooter126',
         name: 'リヤタイヤ交換（スクーター126cc以上）',
-        desc: 'マフラー脱着・リヤタイヤ組み換え・エア調整。',
         price: 5500,
         durationMin: 60
       },
       {
         id: 'both-tire-scooter126',
         name: 'フロント＋リヤタイヤ交換（スクーター126cc以上）',
-        desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 9500,
         durationMin: 120
       }
@@ -618,21 +610,18 @@ function getDynamicPitWorkItems(bike) {
       {
         id: 'front-tire-std',
         name: 'フロントタイヤ交換',
-        desc: 'フロントホイール脱着・新品タイヤ組み換え・バランス調整。',
         price: 4400,
         durationMin: 60
       },
       {
         id: 'rear-tire-std',
         name: 'リヤタイヤ交換',
-        desc: 'リヤホイール脱着・新品タイヤ組み換え・チェーン調整。',
         price: 5500,
         durationMin: 60
       },
       {
         id: 'both-tire-std',
         name: 'フロント＋リヤタイヤ交換',
-        desc: '前後タイヤ一括交換セット。前後同時のリフレッシュがお得です。',
         price: 9500,
         durationMin: 120
       }
@@ -663,7 +652,6 @@ function renderPitWorkList() {
         <div class="work-check">${isSelected ? '●' : ''}</div>
         <div class="work-text">
           <span class="work-title">${escapeHtml(work.name)}</span>
-          <span class="work-desc">${escapeHtml(work.desc)}</span>
         </div>
       </div>
       <div class="work-right">
@@ -740,18 +728,6 @@ function updateSubsectionsVisibility() {
     AppState.includeDctFilter = false;
     const chk = document.getElementById('dctFilterCheckbox');
     if (chk) chk.checked = false;
-  }
-
-  // 5. Tire Selection Section (Displayed when any tire work is selected)
-  const isTireRelated = AppState.selectedWorkId && AppState.selectedWorkId.includes('tire');
-  const tireSection = document.getElementById('tireSelectionSection');
-  if (tireSection) {
-    if (isTireRelated) {
-      tireSection.classList.remove('hidden');
-      renderTireChoices();
-    } else {
-      tireSection.classList.add('hidden');
-    }
   }
 }
 
@@ -970,17 +946,24 @@ function renderEngineOilChoices() {
   }
 
   titleEl.textContent = '🛢️ エンジンオイルの種類 (3種またはその他指定)';
-  const otherInputWrapper = document.getElementById('oilOtherInputWrapper');
 
   NORMAL_ENGINE_OILS.forEach(oil => {
     const isSelected = AppState.selectedOilId === oil.id;
+    const isOther = oil.id === 'oil-other';
     const card = document.createElement('div');
     card.className = `oil-card ${isSelected ? 'selected' : ''}`;
     card.dataset.oilId = oil.id;
 
     const imgHtml = oil.img 
       ? `<img src="${oil.img}" alt="${escapeHtml(oil.name)}" class="oil-card-img-large" onerror="this.style.display='none'">` 
-      : `<div style="height:70px; display:flex; align-items:center; justify-content:center; font-size:2rem; background:#fff7ed; border-radius:6px; margin-bottom:8px;">📝</div>`;
+      : `<div style="height:60px; display:flex; align-items:center; justify-content:center; font-size:2.2rem; margin-bottom:4px;">📝</div>`;
+
+    const inlineInputHtml = isOther ? `
+      <div class="oil-inline-input-wrapper" style="margin-top:8px; padding-top:8px; border-top:1px dashed #fed7aa; width:100%;">
+        <label style="display:block; font-size:0.75rem; font-weight:700; color:#c2410c; margin-bottom:4px;">ご希望の銘柄・粘度・要望:</label>
+        <input type="text" id="oilTileOtherInput" class="form-control" style="font-size:0.8rem; padding:6px 8px; width:100%; border:1px solid #fdba74;" placeholder="例: ワコーズ、ホンダ純正G1、店頭で相談" value="${escapeHtml(AppState.selectedOilOtherText || '')}">
+      </div>
+    ` : '';
 
     card.innerHTML = `
       <div class="oil-card-top">
@@ -988,102 +971,36 @@ function renderEngineOilChoices() {
       </div>
       ${imgHtml}
       <h4 class="oil-name" style="text-align:center;">${escapeHtml(oil.name)}</h4>
-      <p class="oil-spec">${escapeHtml(oil.spec)}</p>
       <div class="oil-meta">
-        <span class="oil-visc">粘度目安: ${escapeHtml(oil.viscosity)}</span>
         <span class="oil-price">${oil.extraPrice > 0 ? `+¥${oil.extraPrice.toLocaleString()}～` : '店頭ご相談'}</span>
       </div>
+      ${inlineInputHtml}
     `;
 
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      // Avoid deselecting if typing in input
+      if (e.target && e.target.id === 'oilTileOtherInput') return;
+
       AppState.selectedOilId = oil.id;
       document.querySelectorAll('.oil-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
-
-      if (otherInputWrapper) {
-        if (oil.id === 'oil-other') {
-          otherInputWrapper.classList.remove('hidden');
-        } else {
-          otherInputWrapper.classList.add('hidden');
-        }
-      }
-
       updateStep2Price();
     });
 
-    container.appendChild(card);
-  });
-
-  if (otherInputWrapper) {
-    if (AppState.selectedOilId === 'oil-other') {
-      otherInputWrapper.classList.remove('hidden');
-    } else {
-      otherInputWrapper.classList.add('hidden');
-    }
-    const txtInput = document.getElementById('oilOtherText');
-    if (txtInput) {
-      txtInput.value = AppState.selectedOilOtherText || '';
-      txtInput.oninput = () => {
-        AppState.selectedOilOtherText = txtInput.value.trim();
-      };
-    }
-  }
-}
-
-// Render Tire Choices for Tire Change Work
-function renderTireChoices() {
-  const container = document.getElementById('tireCardsGrid');
-  const otherInputWrapper = document.getElementById('tireOtherInputWrapper');
-  if (!container) return;
-  container.innerHTML = '';
-
-  TIRE_OPTIONS_MASTER.forEach(tire => {
-    const isSelected = AppState.selectedTireId === tire.id;
-    const card = document.createElement('div');
-    card.className = `tire-card ${isSelected ? 'selected' : ''}`;
-    card.dataset.tireId = tire.id;
-
-    card.innerHTML = `
-      <div>
-        <span class="tire-card-badge">${escapeHtml(tire.badge)}</span>
-        <h4 class="tire-card-title">${escapeHtml(tire.title)}</h4>
-        <p class="tire-card-desc">${escapeHtml(tire.desc)}</p>
-      </div>
-      <div class="tire-card-price">${escapeHtml(tire.priceNote)}</div>
-    `;
-
-    card.addEventListener('click', () => {
-      AppState.selectedTireId = tire.id;
-      document.querySelectorAll('.tire-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-
-      if (otherInputWrapper) {
-        if (tire.id === 'tire-other') {
-          otherInputWrapper.classList.remove('hidden');
-        } else {
-          otherInputWrapper.classList.add('hidden');
-        }
+    if (isOther) {
+      const tileInput = card.querySelector('#oilTileOtherInput');
+      if (tileInput) {
+        tileInput.addEventListener('input', (e) => {
+          AppState.selectedOilOtherText = e.target.value.trim();
+        });
+        tileInput.addEventListener('click', (e) => e.stopPropagation());
       }
-    });
+    }
 
     container.appendChild(card);
   });
-
-  if (otherInputWrapper) {
-    if (AppState.selectedTireId === 'tire-other') {
-      otherInputWrapper.classList.remove('hidden');
-    } else {
-      otherInputWrapper.classList.add('hidden');
-    }
-    const txtInput = document.getElementById('tireOtherText');
-    if (txtInput) {
-      txtInput.value = AppState.selectedTireOtherText || '';
-      txtInput.oninput = () => {
-        AppState.selectedTireOtherText = txtInput.value.trim();
-      };
-    }
-  }
 }
+
 
 
 function calculateStep2Price() {
@@ -1456,9 +1373,13 @@ function prepareStep4Review() {
     } else {
       const oil = NORMAL_ENGINE_OILS.find(o => o.id === AppState.selectedOilId);
       if (oil) {
+        let oilDisplayName = oil.name;
+        if (oil.id === 'oil-other' && AppState.selectedOilOtherText) {
+          oilDisplayName += ` (${AppState.selectedOilOtherText})`;
+        }
         receiptHtml += `
           <div class="receipt-item sub-item">
-            <span>↳ 指定オイル: ${escapeHtml(oil.name)} (${escapeHtml(oil.viscosity)})</span>
+            <span>↳ 指定オイル: ${escapeHtml(oilDisplayName)}</span>
             <span>+¥${oil.extraPrice.toLocaleString()}～</span>
           </div>
         `;
@@ -1505,16 +1426,11 @@ function prepareStep4Review() {
     }
   }
 
-  // Tire selection add-on receipt
+  // Tire work receipt note
   if (work.id && work.id.includes('tire')) {
-    const tire = TIRE_OPTIONS_MASTER.find(t => t.id === AppState.selectedTireId);
-    let tireDescStr = tire ? tire.title : 'スタンダードタイヤ';
-    if (AppState.selectedTireId === 'tire-other' && AppState.selectedTireOtherText) {
-      tireDescStr += ` (${AppState.selectedTireOtherText})`;
-    }
     receiptHtml += `
       <div class="receipt-item sub-item" style="color:#0284c7; font-weight:700;">
-        <span>↳ 指定タイヤ: ${escapeHtml(tireDescStr)}</span>
+        <span>↳ タイヤ本体・銘柄: 店頭在庫または当日ご相談</span>
         <span>タイヤ代金当日清算</span>
       </div>
     `;
@@ -2256,6 +2172,8 @@ function bindEventHandlers() {
     agreePreNoticeModalBtn.addEventListener('click', () => {
       AppState.preNoticeAgreed = true;
       if (preNoticeModal) preNoticeModal.classList.add('hidden');
+      const noticePill = document.getElementById('preNoticeAgreedSummary');
+      if (noticePill) noticePill.classList.remove('hidden');
       showToast('ご予約前の注意事項に同意しました', 'success');
     });
   }
@@ -2274,6 +2192,8 @@ function bindEventHandlers() {
     agreeWorkWarningModalBtn.addEventListener('click', () => {
       AppState.workWarningAgreed = true;
       if (workWarningModal) workWarningModal.classList.add('hidden');
+      const warningPill = document.getElementById('workWarningAgreedSummary');
+      if (warningPill) warningPill.classList.remove('hidden');
       showToast('ピット作業の重要事項・制約に同意しました', 'success');
     });
   }

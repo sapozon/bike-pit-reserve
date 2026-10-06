@@ -83,7 +83,7 @@
             </div>
 
             <!-- Agreement Completed Banner (Can re-open popup modal) -->
-            <div id="preNoticeAgreedSummary" class="notice-agreed-pill">
+            <div id="preNoticeAgreedSummary" class="notice-agreed-pill hidden">
               <span>✅ ご予約前の注意事項に同意済み（国産車・一部外車・適合確認）</span>
               <button type="button" class="btn-text-reopen" id="reopenPreNoticeBtn">注意事項を再確認</button>
             </div>
@@ -191,8 +191,7 @@
           <div class="form-step" id="step2">
             <div class="step-header">
               <span class="step-tag">STEP 2</span>
-              <h2 class="step-title">ご希望のPIT作業をお選びください</h2>
-              <p class="step-subtitle">オイル交換・エレメント・タイヤ交換からお選びいただけます。</p>
+              <h2 class="step-title">作業メニューを選択</h2>
             </div>
 
             <!-- Current Selected Bike Mini Banner -->
@@ -201,7 +200,7 @@
             </div>
 
             <!-- Agreement Completed Banner for Step 2 (Can re-open popup modal) -->
-            <div id="workWarningAgreedSummary" class="warning-agreed-pill">
+            <div id="workWarningAgreedSummary" class="warning-agreed-pill hidden">
               <span>✅ ピット作業に関する注意事項・制約に同意済み</span>
               <button type="button" class="btn-text-reopen" id="reopenWorkWarningBtn">注意事項を再確認</button>
             </div>
@@ -229,7 +228,6 @@
                   <span class="checkmark"></span>
                   <span class="dct-text">
                     <strong>DCTフィルターも追加で交換しますか？</strong>
-                    <span class="dct-subtext">デュアルクラッチトランスミッション専用のクラッチオイルフィルターも同時にリフレッシュします。</span>
                   </span>
                 </label>
               </div>
@@ -243,12 +241,6 @@
               </div>
               <div class="oil-cards-grid" id="oilCardsGrid">
                 <!-- 3 Engine Oil Choices or Harley Dedicated Engine Oil + その他 -->
-              </div>
-              <div id="oilOtherInputWrapper" class="form-group hidden" style="margin-top: 1rem; background: #fff7ed; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #fed7aa;">
-                <label for="oilOtherText" class="form-label font-strong" style="color: #9a3412;">
-                  希望するオイル銘柄・粘度等のご要望をご記入ください <span class="required">必須</span>
-                </label>
-                <input type="text" id="oilOtherText" class="form-control" placeholder="例: ワコーズ トリプルR 10W-40希望、店頭でスタッフと相談して決めたい、等">
               </div>
             </div>
 
@@ -285,24 +277,6 @@
                     <!-- Populated dynamically: HD Genuine Black/Chrome, Aftermarket Black/Chrome, Sundance, or Filter Set Black/Silver -->
                   </select>
                 </div>
-              </div>
-            </div>
-
-            <!-- Tire Brand / Selection Section (Appears when any Tire Change work is chosen) -->
-            <div class="tire-selection-section hidden" id="tireSelectionSection">
-              <div class="tire-section-header">
-                <h3 class="section-subheading" id="tireSectionTitle">🛞 交換タイヤのご希望・銘柄選択</h3>
-                <span class="sub-badge" style="background:#e0f2fe; color:#0369a1;">タイヤ交換対象</span>
-              </div>
-              <p class="tire-section-desc">ピットで組み替えるタイヤのご希望をお選びください。規定サイズに合わせて店頭在庫・お取り寄せ手配いたします。</p>
-              <div class="tire-cards-grid" id="tireCardsGrid">
-                <!-- Dynamically populated by JS: Standard, High-Grip, Touring, その他 (店頭相談・指定) -->
-              </div>
-              <div id="tireOtherInputWrapper" class="form-group hidden" style="margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                <label for="tireOtherText" class="form-label font-strong">
-                  希望するタイヤ銘柄・サイズ等のご要望をご記入ください <span class="required">必須</span>
-                </label>
-                <input type="text" id="tireOtherText" class="form-control" placeholder="例: ミシュラン ロード6希望、純正同等で一番持ちが良いもの、等">
               </div>
             </div>
 
@@ -869,8 +843,10 @@
         </div>
       </div>
     </div>
+  </div>
+
   <!-- 1. 前面表示ポップアップ：ご予約前の注意事項モーダル (STEP 1) -->
-  <div class="modal-backdrop hidden" id="preNoticeModal">
+  <div class="modal-backdrop" id="preNoticeModal">
     <div class="modal-card modal-card-notice">
       <div class="modal-header header-amber">
         <h3 class="modal-title">⚠️ ご予約前の重要注意事項</h3>
