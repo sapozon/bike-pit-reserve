@@ -163,7 +163,17 @@ const JAN_CATALOG = {
   'filter-std': { jan: '4580000030020', name: '車種適合オイルフィルター' },
   'filter-hd-set-black': { jan: '4580000030044', name: 'ハーレー専用オイルフィルターセット【黒】' },
   'filter-hd-set-silver': { jan: '4580000030051', name: 'ハーレー専用オイルフィルターセット【クローム銀】' },
-  'filter-hd-single': { jan: '4580000030068', name: 'ハーレー適合オイルフィルター(単品)' }
+  'filter-hd-single': { jan: '4580000030068', name: 'ハーレー適合オイルフィルター(単品)' },
+  // 工賃・作業バーコード
+  'labor-oil-change': { jan: '2000001001108', name: 'エンジンオイル交換工賃' },
+  'labor-element-change': { jan: '2000001001986', name: 'オイル＆エレメント交換工賃' },
+  'labor-tire-front': { jan: '2000001002207', name: 'フロントタイヤ交換工賃' },
+  'labor-tire-rear': { jan: '2000001002207', name: 'リヤタイヤ交換工賃' },
+  'labor-tire-pair': { jan: '2000001004409', name: '前後タイヤ交換工賃' },
+  'labor-default': { jan: '2000001001108', name: 'ピット基本工賃' },
+  'tire-dummy-f': { jan: '4981160635899', name: 'フロントタイヤ' },
+  'tire-dummy-r': { jan: '4981160635905', name: 'リヤタイヤ' },
+  'tire-dummy-pair': { jan: '4981160635998', name: '前後指定タイヤセット' }
 };
 
 // --- Application State ---
@@ -2146,14 +2156,21 @@ function fillStoreEmailDetails(bookingId) {
   }
 
   // 1. Main PIT labor
+  let laborJan = JAN_CATALOG['labor-default'].jan;
+  if (booking.workId === 'oil-change') laborJan = JAN_CATALOG['labor-oil-change'].jan;
+  else if (booking.workId === 'element-change') laborJan = JAN_CATALOG['labor-element-change'].jan;
+  else if (booking.workId === 'tire-front') laborJan = JAN_CATALOG['labor-tire-front'].jan;
+  else if (booking.workId === 'tire-rear') laborJan = JAN_CATALOG['labor-tire-rear'].jan;
+  else if (booking.workId === 'tire-pair') laborJan = JAN_CATALOG['labor-tire-pair'].jan;
+
   const mainRow = document.createElement('tr');
   mainRow.innerHTML = `
     <td><strong>基本作業工賃</strong></td>
     <td>
       <strong style="color:#0f172a;">${escapeHtml(booking.workName)}</strong>
-      <div style="font-size:0.75rem; color:#64748b;">標準ピット作業 (${booking.durationMin || 30}分)</div>
+      <div style="font-size:0.75rem; color:#64748b;">標準ピット作業工賃 (${booking.durationMin || 30}分)</div>
     </td>
-    <td><span style="font-size:0.75rem; color:#64748b;">工賃POS登録済</span></td>
+    <td>${generateBarcodeHtml(laborJan)}</td>
     <td style="text-align:right; font-weight:700;">¥${(booking.workPrice || 1100).toLocaleString()}～</td>
   `;
   tbody.appendChild(mainRow);
@@ -2169,6 +2186,8 @@ function fillStoreEmailDetails(bookingId) {
       if (match) jan = match[1].jan;
     }
 
+    const oilPriceVal = booking.oilPrice || (isHarleyBike ? 4000 : 2200);
+
     oilRow.innerHTML = `
       <td><span style="color:#2563eb; font-weight:700;">使用エンジンオイル</span></td>
       <td>
@@ -2178,7 +2197,7 @@ function fillStoreEmailDetails(bookingId) {
         </div>
       </td>
       <td>${generateBarcodeHtml(jan)}</td>
-      <td style="text-align:right; font-weight:700;">${booking.oilPrice ? `+¥${booking.oilPrice.toLocaleString()}～` : '工賃に含む'}</td>
+      <td style="text-align:right; font-weight:700;">+¥${oilPriceVal.toLocaleString()}～</td>
     `;
     tbody.appendChild(oilRow);
   }
@@ -2188,6 +2207,7 @@ function fillStoreEmailDetails(bookingId) {
     const filterRow = document.createElement('tr');
     let filterPartText = '車種適合エンジンオイルフィルター（パッキン/Oリング含む）';
     let filterJan = JAN_CATALOG['filter-std'].jan;
+    let filterPriceVal = 1320; // 標準エレメント本体目安価格
 
     if (booking.harleyDetails && booking.harleyDetails.filterChoice) {
       filterPartText = `【ハーレー指定品】${booking.harleyDetails.filterChoice}`;
@@ -2196,6 +2216,7 @@ function fillStoreEmailDetails(bookingId) {
       } else {
         filterJan = booking.harleyDetails.useFilterSet ? JAN_CATALOG['filter-hd-set-silver'].jan : JAN_CATALOG['filter-hd-single'].jan;
       }
+      filterPriceVal = booking.harleyDetails.useFilterSet ? 3300 : 2200;
     }
 
     filterRow.innerHTML = `
@@ -2205,7 +2226,7 @@ function fillStoreEmailDetails(bookingId) {
         <div style="font-size:0.75rem; color:#475569;">取付時Oリング部オイル塗布・規定トルク管理</div>
       </td>
       <td>${generateBarcodeHtml(filterJan)}</td>
-      <td style="text-align:right; font-weight:700;">作業内包</td>
+      <td style="text-align:right; font-weight:700;">+¥${filterPriceVal.toLocaleString()}～</td>
     `;
     tbody.appendChild(filterRow);
   }
@@ -2266,16 +2287,27 @@ function fillStoreEmailDetails(bookingId) {
     if (booking.tireOtherText) {
       tireDescStr += ` (${escapeHtml(booking.tireOtherText)})`;
     }
+
+    let tireJan = JAN_CATALOG['tire-dummy-pair'].jan;
+    let tireEstPrice = '18,700～ (※銘柄確定後)';
+    if (booking.workId === 'tire-front') {
+      tireJan = JAN_CATALOG['tire-dummy-f'].jan;
+      tireEstPrice = '8,800～ (※銘柄確定後)';
+    } else if (booking.workId === 'tire-rear') {
+      tireJan = JAN_CATALOG['tire-dummy-r'].jan;
+      tireEstPrice = '12,100～ (※銘柄確定後)';
+    }
+
     tireRow.innerHTML = `
       <td><span style="color:#0284c7; font-weight:700;">組み換えタイヤ指定</span></td>
       <td>
         <strong style="color:#0369a1;">${tireDescStr}</strong>
         <div style="font-size:0.75rem; color:#475569;">
-          規定サイズ (F: ${escapeHtml(booking.bike.frontTire || '要確認')} / R: ${escapeHtml(booking.bike.rearTire || '要確認')}) ※本体代は当日店頭清算
+          規定サイズ (F: ${escapeHtml(booking.bike.frontTire || '要確認')} / R: ${escapeHtml(booking.bike.rearTire || '要確認')}) ※店頭在庫品
         </div>
       </td>
-      <td><span style="font-size:0.75rem; color:#64748b;">当日商品バーコード読取</span></td>
-      <td style="text-align:right; font-weight:700;">当日店頭清算</td>
+      <td>${generateBarcodeHtml(tireJan)}</td>
+      <td style="text-align:right; font-weight:700;">¥${tireEstPrice}</td>
     `;
     tbody.appendChild(tireRow);
   }
